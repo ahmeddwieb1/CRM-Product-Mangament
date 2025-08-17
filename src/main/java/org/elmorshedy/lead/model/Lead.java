@@ -5,10 +5,14 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.ToString;
 import org.bson.types.ObjectId;
+import org.elmorshedy.note.models.Note;
 import org.elmorshedy.user.model.User;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document
@@ -31,4 +35,6 @@ public class Lead {
     private LeadSource leadSource;
 
     private LeadStatus leadStatus;
+    @DBRef(lazy = true)
+    private List<Note> notes = new ArrayList<>();
 }
