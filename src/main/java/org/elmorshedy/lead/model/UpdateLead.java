@@ -1,21 +1,13 @@
 package org.elmorshedy.lead.model;
 
-
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.ToString;
-import org.bson.types.ObjectId;
 import org.elmorshedy.user.model.User;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 @Data
-@Document
-@ToString(exclude = {"assignedTo"})
-public class Lead {
-    @Id
-    private ObjectId id;
+public class UpdateLead {
 
     private String leadName;
 
@@ -23,9 +15,9 @@ public class Lead {
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
     private String phone;
 
-    @DBRef
-    private User assignedTo;
+    private String assignedTo;
 
+    @Positive(message = "Budget must be greater than 0")
     private double budget;
 
     private LeadSource leadSource;

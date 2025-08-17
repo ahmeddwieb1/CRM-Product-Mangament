@@ -2,6 +2,8 @@ package org.elmorshedy.lead.service;
 
 import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
+import org.elmorshedy.lead.model.CreateLead;
+import org.elmorshedy.lead.model.UpdateLead;
 
 import java.util.List;
 
@@ -10,9 +12,12 @@ public interface LeadService {
 
     public List<Lead> getLeads();
 
-    public Lead addLead(Lead lead);
+    Lead addLead(CreateLead leadRequest, String currentUsername);
 
-    public Lead updateLead(Lead lead);
+    //لو user have lead
+    List<Lead> getLeadsByUserid(ObjectId id);
+
+    Lead updateLead(ObjectId id, UpdateLead leadRequest, String currentUsername);
 
     public void deleteLead(ObjectId id);
 }
