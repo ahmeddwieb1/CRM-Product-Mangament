@@ -1,6 +1,7 @@
 package org.elmorshedy.user.service;
 
 import org.bson.types.ObjectId;
+import org.elmorshedy.user.model.AppRole;
 import org.elmorshedy.user.model.User;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public interface UserService {
     List<User> findAlluser();
 
-    void updateUserRole(ObjectId userid, String rolename);
+    User updateUserRole(ObjectId userid, AppRole rolename);
 
     User findbyusername(String username);
 

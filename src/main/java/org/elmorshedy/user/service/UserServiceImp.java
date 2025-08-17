@@ -1,6 +1,8 @@
 package org.elmorshedy.user.service;
 
 import org.bson.types.ObjectId;
+import org.elmorshedy.user.model.AppRole;
+import org.elmorshedy.user.model.Role;
 import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,22 @@ public class UserServiceImp implements UserService {
         Optional<User> user = userRepo.findByUsername(username);
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
-//todo
-    @Override
-    public void updateUserRole(ObjectId userid, String rolename) {
-
+    public User findById(ObjectId id) {
+        Optional<User> user = userRepo.findById(id);
+        return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
 
+    //todo
+    @Override
+    public User updateUserRole(ObjectId userId, AppRole rolename) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Role role =new Role(rolename);
+        if (role.getRolename()==AppRole.ROLE_ADMIN) {
+            throw  new IllegalArgumentException("You cannot assign admin role.");
+        }
+        user.setRole(role);
+        return userRepo.save(user);
+    }
 }

@@ -2,6 +2,7 @@ package org.elmorshedy.user.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
+import lombok.ToString;
 import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
 import org.springframework.data.annotation.Id;
@@ -17,7 +18,6 @@ public class User {
     private String password;
     @JsonBackReference
     private Role role;
-    private Lead lead;
 
     public User(String username, String email, String password) {
         this.username = username;
