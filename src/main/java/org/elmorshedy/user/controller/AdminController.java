@@ -1,14 +1,16 @@
 package org.elmorshedy.user.controller;
 
+import org.bson.types.ObjectId;
+import org.elmorshedy.user.model.ChangeRoleRequest;
 import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.service.UserServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
@@ -21,5 +23,16 @@ public class AdminController {
     }
 
 //    @GetMapping("")
+
+    @PutMapping("/{userId}/role")
+    public ResponseEntity<User> changeUserRole(
+            @PathVariable ObjectId userId,
+            @RequestBody ChangeRoleRequest request) {
+
+        User updatedUser = userService.updateUserRole(userId, request.getRolename());
+        return ResponseEntity.ok(updatedUser);
+    }
+
+
 }
 
