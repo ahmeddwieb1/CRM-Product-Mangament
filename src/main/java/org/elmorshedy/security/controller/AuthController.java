@@ -2,6 +2,7 @@ package org.elmorshedy.security.controller;
 
 import jakarta.validation.Valid;
 
+import lombok.extern.slf4j.Slf4j;
 import org.elmorshedy.security.jwt.JwtUtils;
 import org.elmorshedy.security.request.LoginRequest;
 import org.elmorshedy.security.request.SignupRequest;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -46,7 +48,7 @@ public class AuthController {
     @Autowired
     private RoleRepo roleRepo;
     @Autowired
-    private PasswordEncoder encoder;
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private UserServiceImp userService;
 
@@ -93,7 +95,7 @@ public class AuthController {
         // Create new user's account
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
+                passwordEncoder.encode(signUpRequest.getPassword()));
 
         Set<String> strRoles = signUpRequest.getRoles();
         Role role;
@@ -107,13 +109,14 @@ public class AuthController {
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Error: Admin role is restricted and cannot be assigned!"));
-            }else if (roleStr.equals("SALES_ADMIN") || roleStr.equals("sales_admin")) {
-                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            } else if (roleStr.equals("TEAM_LEADER") || roleStr.equals("team_leader")) {
-                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             }
+//            else if (roleStr.equals("SALES_ADMIN") || roleStr.equals("sales_admin")) {
+//                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
+//                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//            } else if (roleStr.equals("TEAM_LEADER") || roleStr.equals("team_leader")) {
+//                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
+//                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//            }
             else {
                 role = roleRepo.findByRolename(AppRole.SALES_REP)
                         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
@@ -129,7 +132,7 @@ public class AuthController {
         }
         user.setRole(role);
         userRepo.save(user);
-
+        log.info("User registered successfully!");
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
@@ -146,14 +149,8 @@ public class AuthController {
                 user.getUsername(),
                 user.getEmail(),
                 roles
-//                user.isAccountNonLocked(),
-//                user.isAccountNonExpired(),
-//                user.isCredentialsNonExpired(),
-//                user.isEnabled(),
-//                user.getCredentialsExpiredData(),
-//                user.getAccountExpiryData(),
-//                user.isTwofactorEnabled(),
         );
         return ResponseEntity.ok(response);
     }
+
 }

@@ -20,12 +20,20 @@ import java.util.Map;
 public class AuthEntryPointJwtImp implements AuthenticationEntryPoint {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwtImp.class);
+    private final ObjectMapper objectMapper;
 
+    // Inject ObjectMapper so it's preconfigured with modules (e.g. JavaTimeModule)
+    public AuthEntryPointJwtImp(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
+        String path = request.getServletPath();
+        String errorMessage = authException.getMessage();
+
+        logger.warn("Unauthorized access attempt - Path: {}, Message: {}", path, errorMessage);
         logger.error("Unauthorized error: {}", authException.getMessage());
-        logger.error("authException: ", authException);
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -33,10 +41,13 @@ public class AuthEntryPointJwtImp implements AuthenticationEntryPoint {
         final Map<String, Object> body = new HashMap<>();
         body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
         body.put("error", "Unauthorized");
-        body.put("message", authException.getMessage());
-        body.put("timestamp", Instant.now());
-        body.put("path", request.getServletPath());
+        body.put("message", errorMessage);
+        body.put("path", path);
 
+//        body.put("path", request.getServletPath());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        objectMapper.writeValue(response.getOutputStream(), body);
         final ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);
     }
