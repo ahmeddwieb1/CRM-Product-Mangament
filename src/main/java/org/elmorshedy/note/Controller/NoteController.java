@@ -47,8 +47,7 @@ public class NoteController {
     }
 
     @GetMapping("/lead/{leadId}")
-    public ResponseEntity<List<Note>> getNotesByLead(
-            @PathVariable ObjectId leadId) {
+    public ResponseEntity<List<Note>> getNotesByLead(@PathVariable ObjectId leadId) {
         return ResponseEntity.ok(noteService.getNotesByLead(leadId));
     }
 
