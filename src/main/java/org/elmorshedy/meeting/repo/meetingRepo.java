@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface meetingRepo extends MongoRepository<Meeting, ObjectId> {
-    List<Meeting> findByAssignedTo_Id(ObjectId userId);
+    List<Meeting> findByAssignedToId(String assignedToId);
 }
