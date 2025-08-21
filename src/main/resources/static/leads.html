@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>MyApp • Leads</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: #f7f9fc;
+            color: #0f172a
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            background: #fff;
+            box-shadow: 0 1px 0 rgba(2, 6, 23, .06)
+        }
+
+        .brand {
+            font-weight: 800
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            background: #ef4444;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, .06);
+            padding: 22px
+        }
+
+        .muted {
+            color: #64748b
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:360px 1fr;
+            gap: 16px
+        }
+
+        .list {
+            border-right: 1px solid rgba(2, 6, 23, .08);
+            padding-right: 12px;
+            max-height: 60vh;
+            overflow: auto
+        }
+
+        .item {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .item:hover {
+            background: #f1f5f9
+        }
+
+        .item.active {
+            background: #e2e8f0
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns:180px 1fr;
+            gap: 8px
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns:1fr 1fr;
+            gap: 8px
+        }
+
+        input, select {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px
+        }
+
+        a.nav {
+            margin-right: 12px
+        }
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="brand">MyApp</div>
+    <div>
+        <a class="nav" href="/dashboard.html">Dashboard</a>
+        <a class="nav" href="/meetings.html">Meetings</a>
+        <a class="nav" href="/leads.html">leads</a>
+        <a class="nav" href="/settings.html">Settings</a>
+        <span id="welcome" class="muted"></span>
+        <button class="btn" id="logout">Logout</button>
+    </div>
+</header>
+<main class="wrap">
+    <div class="card" style="margin-bottom:16px">
+        <h2>Leads</h2>
+        <p class="muted">Browse and add leads</p>
+    </div>
+    <div class="card">
+        <div class="grid">
+            <section>
+                <h3>All Leads</h3>
+                <div class="muted" id="leads-hint">Admin sees all leads. Others see their own.</div>
+                <div id="list" class="list"></div>
+                <hr style="margin:12px 0;border:0;border-top:1px solid rgba(2,6,23,.08)"/>
+                <h4>Add Lead</h4>
+                <form id="lead-form">
+                    <div class="row">
+                        <input id="lf-name" placeholder="Lead name" required/>
+                        <input id="lf-phone" placeholder="Phone (digits)" required/>
+                    </div>
+                    <div class="row">
+                        <input id="lf-budget" placeholder="Budget" type="number" min="1" step="0.01" required/>
+                        <input id="lf-assigned" placeholder="Assigned to (username)" required/>
+                    </div>
+                    <div class="row">
+                        <select id="lf-source" required>
+                            <option value="">Source</option>
+                            <option>SOCIAL_MEDIA</option>
+                            <option>WEBSITE</option>
+                            <option>REFERRAL</option>
+                            <option>COLDCALL</option>
+                            <option>WALK_IN</option>
+                        </select>
+                        <select id="lf-status" required>
+                            <option value="">Status</option>
+                            <option>FRESH_LEAD</option>
+                            <option>FOLLLOW_UP</option>
+                            <option>SCHEDULED_VISIT</option>
+                            <option>OPEN_DEAL</option>
+                            <option>CLOSED_DEAL</option>
+                            <option>NO_ANSWER</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="lf-btn" type="submit" style="margin-top:8px">Create Lead</button>
+                    <div id="lf-msg" class="muted" style="margin-top:6px"></div>
+                </form>
+            </section>
+            <section>
+                <h3>Details</h3>
+                <div id="details" class="muted">Select a lead to view details</div>
+            </section>
+        </div>
+    </div>
+</main>
+<script>
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('username') || 'User';
+
+    function isJwt(t) {
+        return typeof t === 'string' && t.split('.').length === 3
+    }
+
+    if (!isJwt(token)) {
+        localStorage.clear();
+        window.location.href = '/auth.html';
+    }
+    document.getElementById('welcome').textContent = 'Welcome, ' + user;
+    document.getElementById('logout').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = '/auth.html';
+    });
+    const authHeaders = {'Authorization': 'Bearer ' + token};
+
+    function authFetch(url, options = {}) {
+        const headers = Object.assign({}, options.headers || {}, authHeaders);
+        return fetch(url, {...options, headers});
+    }
+
+    const listEl = document.getElementById('list');
+    const detailsEl = document.getElementById('details');
+
+    function renderDetails(l) {
+        if (!l) {
+            detailsEl.innerHTML = '<span class="muted">Select a lead to view details</span>';
+            return;
+        }
+        detailsEl.classList.remove('muted');
+        const assigned = l.assignedTo && (l.assignedTo.username || l.assignedTo);
+        detailsEl.innerHTML = `
+      <div class="kv">
+        <div>Lead name</div><div><strong>${l.leadName || ''}</strong></div>
+        <div>Phone</div><div>${l.phone || ''}</div>
+        <div>Budget</div><div>${l.budget ?? ''}</div>
+        <div>Source</div><div>${l.leadSource || ''}</div>
+        <div>Status</div><div>${l.leadStatus || ''}</div>
+        <div>Assigned To</div><div>${assigned || ''}</div>
+        <div>Note</div>
+        <div>
+          ${(l.notes && l.notes.length > 0)
+            ? l.notes.map(n => `<div>- ${n}</div>`).join('')
+            : '<span class="muted">No notes</span>'}
+        </div>
+  </div>`;
+    }
+
+    function renderList(leads){
+        if(!leads || leads.length===0){
+            listEl.innerHTML = '<span class="muted">No leads</span>';
+            renderDetails(null);
+            return;
+        }
+        listEl.innerHTML = '';
+        leads.forEach((l, idx)=>{
+            const item = document.createElement('div');
+            item.className = 'item' + (idx===0?' active':'');
+
+            // النص الأساسي لليد
+            const textSpan = document.createElement('span');
+            textSpan.textContent = `${l.leadName||'Lead'} (${l.leadStatus||''})`;
+            textSpan.addEventListener('click', ()=>{
+                document.querySelectorAll('.item').forEach(el=> el.classList.remove('active'));
+                item.classList.add('active');
+                renderDetails(l);
+            });
+
+            // زرار delete
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.style.marginLeft = '10px';
+            deleteBtn.style.color = 'white';
+            deleteBtn.style.background = 'red';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.addEventListener('click', async (e)=>{
+                e.stopPropagation(); // عشان ما يفتحش التفاصيل مع الضغط
+                if(confirm(`Are you sure you want to delete lead "${l.leadName}"?`)){
+                    try {
+                        const res = await authFetch(`/api/lead/${l.id}`, {method:'DELETE'});
+                        if(res.ok){
+                            alert('Lead deleted successfully');
+                            window.location.reload(); // إعادة تحميل الصفحة
+                        } else {
+                            alert('Failed to delete lead');
+                        }
+                    } catch (err) {
+                        alert('Error: ' + err.message);
+                    }
+                }
+            });
+
+            item.appendChild(textSpan);
+            item.appendChild(deleteBtn);
+            listEl.appendChild(item);
+        });
+        renderDetails(leads[0]);
+    }
+
+
+    async function loadLeads() {
+        // try admin view
+        let res = await authFetch('/api/lead');
+        if (res.status === 200) {
+            const data = await res.json();
+            renderList(data);
+            return;
+        }
+        if (res.status === 403) {
+            // fallback to user-specific
+            const me = await authFetch('/api/auth/user').then(r => r.json());
+            const data = await authFetch(`/api/lead/${me.id}/user`).then(r => r.ok ? r.json() : []);
+            renderList(data);
+            return;
+        }
+        listEl.innerHTML = '<span class="muted">Failed to load leads</span>';
+    }
+
+    // Pre-fill assigned to username
+    document.getElementById('lf-assigned').value = user;
+
+    document.getElementById('lead-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('lf-msg');
+        msg.textContent = '';
+        const body = {
+            leadName: document.getElementById('lf-name').value.trim(),
+            phone: document.getElementById('lf-phone').value.trim(),
+            budget: parseFloat(document.getElementById('lf-budget').value),
+            leadSource: document.getElementById('lf-source').value,
+            leadStatus: document.getElementById('lf-status').value,
+            assignedTo: document.getElementById('lf-assigned').value.trim()
+        };
+        const btn = document.getElementById('lf-btn');
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+        try {
+            const res = await authFetch('/api/lead', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) {
+                const t = await res.json().catch(() => ({error: 'Failed'}));
+                throw new Error(t.error || 'Failed to create lead');
+            }
+            msg.textContent = 'Lead created';
+            document.getElementById('lead-form').reset();
+            document.getElementById('lf-assigned').value = user;
+            loadLeads();
+        } catch (err) {
+            msg.textContent = err.message || 'Failed to create lead';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Create Lead';
+        }
+    });
+
+    loadLeads();
+</script>
+</body>
+</html>

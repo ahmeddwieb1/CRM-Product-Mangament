@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>MyApp • Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: #f7f9fc;
+            color: #0f172a
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            background: #ffffff;
+            box-shadow: 0 1px 0 rgba(2, 6, 23, .06)
+        }
+
+        .brand {
+            font-weight: 800
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            background: #ef4444;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, .06);
+            padding: 22px
+        }
+
+        .muted {
+            color: #64748b
+        }
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="brand">MyApp</div>
+    <div>
+        <a class="nav" href="/dashboard.html">dashboard</a>
+        <a class="nav" href="/meetings.html">meetings</a>
+        <a class="nav" href="/leads.html">Leads</a>
+        <a class="nav" href="/settings.html">Settings</a>
+        <span id="welcome" class="muted"></span>
+        <button class="btn" id="logout">Logout</button>
+    </div>
+</header>
+<main class="wrap">
+    <div class="card">
+            <h2>Home Dashboard</h2>
+            <p class="muted">You're signed in. Use the API token for secured requests.</p>
+<!--            <pre id="token" class="muted" style="white-space:pre-wrap;word-wrap:break-word"></pre>-->
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px">
+            <div class="card">
+                <h3>Settings</h3>
+                <p class="muted">Account information</p>
+                <div id="settings">
+                    <div>Username: <strong id="s-username"></strong></div>
+                    <div>Roles: <strong id="s-roles"></strong></div>
+                    <div style="margin-top:8px"><a href="/settings.html">Open Settings</a></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Leads</h3>
+                <p class="muted">All leads (admin only)</p>
+                <a class="nav" href="/leads.html">Leads</a>
+                <div id="leads"></div>
+            </div>
+            <div class="card">
+                <h3>Meetings</h3>
+                <p class="muted">Recent meetings</p>
+                <a class="nav" href="/meetings.html">meetings</a>
+                <div id="meetings"></div>
+            </div>
+            <div class="card">
+                <h3>Products</h3>
+                <p class="muted">Available products</p>
+                <div id="products"></div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('username') || 'User';
+        const rolesStr = localStorage.getItem('roles') || '[]';
+
+    function isLikelyJwt(t) {
+        return typeof t === 'string' && t.split('.').length === 3;
+    }
+
+    if (!isLikelyJwt(token)) {
+        localStorage.removeItem('token');
+        window.location.href = '/auth.html';
+    } else {}
+
+    let rolesList;
+    try {
+        rolesList = JSON.parse(rolesStr);
+    } catch (e) {
+        rolesList = Array.isArray(rolesStr) ? rolesStr : [rolesStr];
+    }
+
+    document.getElementById('welcome').textContent = 'Welcome, ' + user;
+    document.getElementById('token').textContent = token ? 'JWT: ' + token : 'No token present';
+    document.getElementById('s-username').textContent = user;
+    document.getElementById('s-roles').textContent = Array.isArray(rolesList) ? rolesList.join(', ') : rolesList;
+
+    document.getElementById('logout').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('roles');
+        window.location.href = '/auth.html';
+    });
+    const authHeaders = isLikelyJwt(token) ? {'Authorization': 'Bearer ' + token} : {};
+
+    function authFetch(url, options = {}) {
+        const headers = Object.assign({}, options.headers || {}, authHeaders);
+        return fetch(url, {...options, headers});
+    }
+
+    // Summary
+    authFetch('/api/dashboard/summary')
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(data => console.log('Summary', data))
+        .catch(() => {
+        });
+
+    // Leads (admin)
+    authFetch('/api/lead')
+        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status: r.status, text: t})))
+        .then(leads => {
+            const el = document.getElementById('leads');
+            el.innerHTML = (leads || []).slice(0, 10).map(l => `<div>- ${l.leadName || l.name || 'Lead'} (${l.status || ''})</div>`).join('') || '<span class="muted">No leads</span>';
+        })
+        .catch(err => {
+            const el = document.getElementById('leads');
+            el.innerHTML = (err && err.status === 403)
+                ? '<span class="muted">Forbidden: Admins only</span>'
+                : '<span class="muted">Failed to load leads</span>';
+        });
+
+    // Meetings
+    authFetch('/api/meetings')
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(meetings => {
+            const el = document.getElementById('meetings');
+            el.innerHTML = (meetings || []).slice(0, 10).map(m => `<div>- ${m.title || 'Meeting'} (${m.status || ''})</div>`).join('') || '<span class="muted">No meetings</span>';
+        })
+        .catch(() => {
+            document.getElementById('meetings').innerHTML = '<span class="muted">Failed to load meetings</span>';
+        });
+
+    // Products
+    authFetch('/api/products')
+        .then(r => r.ok ? r.json() : Promise.reject(r))
+        .then(products => {
+            const el = document.getElementById('products');
+            el.innerHTML = (products || []).slice(0, 10).map(p => `<div>- ${p.name} (${p.price ?? ''})</div>`).join('') || '<span class="muted">No products</span>';
+        })
+        .catch(() => {
+            document.getElementById('products').innerHTML = '<span class="muted">Failed to load products</span>';
+        });
+</script>
+</body>
+</html>

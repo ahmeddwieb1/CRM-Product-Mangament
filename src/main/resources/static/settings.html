@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>MyApp • Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: #f7f9fc;
+            color: #0f172a
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            background: #fff;
+            box-shadow: 0 1px 0 rgba(2, 6, 23, .06)
+        }
+
+        .brand {
+            font-weight: 800
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            background: #ef4444;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, .06);
+            padding: 22px
+        }
+
+        .muted {
+            color: #64748b
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:300px 1fr;
+            gap: 16px
+        }
+
+        .list {
+            border-right: 1px solid rgba(2, 6, 23, .08);
+            padding-right: 12px;
+            max-height: 60vh;
+            overflow: auto
+        }
+
+        .user-item {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .user-item:hover {
+            background: #f1f5f9
+        }
+
+        .user-item.active {
+            background: #e2e8f0
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns:160px 1fr;
+            gap: 8px
+        }
+
+        a.nav {
+            margin-right: 12px
+        }
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="brand">MyApp</div>
+    <div>
+        <a class="nav" href="/meetings.html">meetings</a>
+        <a class="nav" href="/leads.html">Leads</a>
+        <a class="nav" href="/dashboard.html">Dashboard</a>
+        <span id="welcome" class="muted"></span>
+        <button class="btn" id="logout">Logout</button>
+    </div>
+</header>
+<main class="wrap">
+    <div class="card" style="margin-bottom:16px">
+        <h2>Settings</h2>
+        <p class="muted">Manage your account and users.</p>
+        <div>Signed in as <strong id="me-username"></strong> — Roles: <strong id="me-roles"></strong></div>
+    </div>
+
+    <div class="card">
+        <div class="grid">
+            <section>
+                <h3>Users</h3>
+                <p class="muted" id="users-hint">List of users (admin only)</p>
+                <div id="users" class="list"></div>
+                <hr style="margin:12px 0;border:0;border-top:1px solid rgba(2,6,23,.08)"/>
+                <h4>Add user</h4>
+                <div class="muted" style="font-size:12px;margin-bottom:6px">Creates a standard Sales Rep user.</div>
+                <form id="add-user-form">
+                    <div style="display:grid;gap:8px">
+                        <input id="au-username" type="text" placeholder="Username" required
+                               style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
+                        <input id="au-email" type="email" placeholder="Email" required
+                               style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
+                        <input id="au-password" type="password" placeholder="Password (min 6)" required
+                               style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
+                        <input id="au-confirm" type="password" placeholder="Confirm password" required
+                               style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
+                        <button class="btn" id="au-btn" type="submit">Add User</button>
+                        <div id="au-msg" class="muted"></div>
+                    </div>
+                </form>
+            </section>
+            <section>
+                <!--todo-->
+                <h3>Sales details</h3>
+                <div id="details" class="muted">Select a Sales to view details</div>
+            </section>
+        </div>
+    </div>
+</main>
+<script>
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('username') || 'User';
+    const rolesStr = localStorage.getItem('roles') || '[]';
+
+    function isLikelyJwt(t) {
+        return typeof t === 'string' && t.split('.').length === 3
+    }
+
+    if (!isLikelyJwt(token)) {
+        localStorage.removeItem('token');
+        window.location.href = '/auth.html';
+    }
+    let rolesList;
+    try {
+        rolesList = JSON.parse(rolesStr);
+    } catch (e) {
+        rolesList = Array.isArray(rolesStr) ? rolesStr : [rolesStr];
+    }
+
+    document.getElementById('welcome').textContent = 'Welcome, ' + user;
+    document.getElementById('me-username').textContent = user;
+
+    // todo
+    document.getElementById('me-roles').textContent = Array.isArray(rolesList) ? rolesList.join(', ') : rolesList;
+    document.getElementById('logout').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('roles');
+        window.location.href = '/auth.html';
+    });
+
+    const authHeaders = {'Authorization': 'Bearer ' + token};
+
+    function authFetch(url, options = {}) {
+        const headers = Object.assign({}, options.headers || {}, authHeaders);
+        return fetch(url, {...options, headers});
+    }
+
+    const usersEl = document.getElementById('users');
+    const detailsEl = document.getElementById('details');
+
+    // todo
+    function renderDetails(u) {
+        if (!u) {
+            detailsEl.innerHTML = '<span class="muted">Select a Sales to view details</span>';
+            return;
+        }
+        const role = (u.role && (u.role.rolename || u.role.name)) || 'N/A';
+        detailsEl.classList.remove('muted');
+        detailsEl.innerHTML = `
+      <div class="kv">
+        <div>Username</div><div><strong>${u.username || ''}</strong></div>
+        <div>Email</div><div>${u.email || ''}</div>
+        <div>Role</div><div>${role}</div>
+      </div>
+    `;
+    }
+
+    function renderList(users) {
+        if (!users || users.length === 0) {
+            usersEl.innerHTML = '<span class="muted">No users</span>';
+            renderDetails(null);
+            return;
+        }
+        usersEl.innerHTML = '';
+        users.forEach((u, idx) => {
+            const item = document.createElement('div');
+            item.className = 'user-item' + (idx === 0 ? ' active' : '');
+            item.textContent = `${u.username} ${u.email ? '(' + u.email + ')' : ''}`;
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                renderDetails(u);
+            });
+            usersEl.appendChild(item);
+        });
+        renderDetails(users[0]);
+    }
+
+    authFetch('/api/admin')
+        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status: r.status, text: t})))
+        .then(renderList)
+        .catch(err => {
+            usersEl.innerHTML = (err && err.status === 403)
+                ? '<span class="muted">Forbidden: Admins only</span>'
+                : '<span class="muted">Failed to load users</span>';
+            detailsEl.innerHTML = '<span class="muted">No Sales selected</span>';
+        });
+
+    // Add user submit
+    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('au-msg');
+        msg.textContent = '';
+        const username = document.getElementById('au-username').value.trim();
+        const email = document.getElementById('au-email').value.trim();
+        const password = document.getElementById('au-password').value;
+        const confirm = document.getElementById('au-confirm').value;
+        if (!username || !email || !password) {
+            msg.textContent = 'Please fill all fields';
+            return;
+        }
+        if (password.length < 6) {
+            msg.textContent = 'Password must be at least 6 characters';
+            return;
+        }
+        if (password !== confirm) {
+            msg.textContent = 'Passwords do not match';
+            return;
+        }
+        const btn = document.getElementById('au-btn');
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+        try {
+            const res = await fetch('/api/auth/public/signup', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, email, password})
+            });
+            if (!res.ok) {
+                const t = await res.json().catch(() => ({message: 'Failed to add user'}));
+                throw new Error(t.message || 'Failed to add user');
+            }
+            msg.textContent = 'User added successfully';
+            document.getElementById('add-user-form').reset();
+            // refresh users
+            authFetch('/api/admin')
+                .then(r => r.ok ? r.json() : [])
+                .then(renderList)
+                .catch(() => {
+                });
+        } catch (err) {
+            msg.textContent = err.message || 'Failed to add user';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Add User';
+        }
+    });
+</script>
+</body>
+</html>
