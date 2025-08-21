@@ -133,7 +133,7 @@
                 <form id="meeting-form">
                     <div class="row">
                         <input id="mf-title" placeholder="Title" required/>
-                        <input id="mf-clientName" placeholder="Client Name"/>
+                        <input id="mf-clientId" placeholder="Client ID"/>
                     </div>
                     <div class="row">
                         <input id="mf-date" type="date" required/>
@@ -156,14 +156,14 @@
                             <option>CANCELLED</option>
                         </select>
                         <select id="mf-location">
-                            <option value="">Status</option>
+                            <option value="">Location</option>
                             <option>ONLINE</option>
                             <option>OFFLINE</option>
                         </select>
                     </div>
                     <div class="row">
-                        <input id="mf-assignedTo" placeholder="Assigned To" required/>
-                        <input id="mf-notes" placeholder="Note message"/>
+                        <input id="mf-assignedToId" placeholder="Assigned To ID" required/>
+                        <input id="mf-noteMessage" placeholder="Note message"/>
                     </div>
                     <button class="btn" id="mf-btn" type="submit" style="margin-top:8px">Create Meeting</button>
                     <!--                    <button class="upt" id="mf-upt" type="reset" style="margin-top:8px">Update Meeting</button>-->
@@ -219,11 +219,14 @@
         </h3>
         <div class="kv">
             <div>Date</div><div>${m.date || ''}</div>
+            <div>Time</div><div>${m.time || ''}</div>
             <div>Duration</div><div>${m.duration || ''} hours</div>
             <div>Location</div><div>${m.location || ''}</div>
             <div>Status</div><div>${m.status || ''}</div>
+            <div>Type</div><div>${m.type || ''}</div>
             <div>Client Name</div><div>${m.clientName || ''}</div>
-            <div>Notes</div><div>${m.notes ? m.notes.replace(/\n/g, '<br>') : '<span class="muted">No notes</span>'}</div>
+            <div>Assigned To</div><div>${m.assignedTo || ''}</div>
+            <div>Notes</div><div>${m.notes && m.notes.length ? m.notes.join('<br>') : '<span class="muted">No notes</span>'}</div>
         </div>
     `;
     }
@@ -267,7 +270,7 @@
         if (info && info.id) {
             me.id = info.id;
         }
-        document.getElementById('mf-assignedTo').value = me.id || '';
+        document.getElementById('mf-assignedToId').value = me.id || '';
     }
 
     async function loadMeetings() {
@@ -286,15 +289,15 @@
         msg.textContent = '';
         const body = {
             title: document.getElementById('mf-title').value.trim(),
-            clientName: document.getElementById('mf-clientName').value.trim() || null,
-            assignedTo: document.getElementById('mf-assignedTo').value.trim() || me.id,
+            clientId: document.getElementById('mf-clientId').value.trim() || null,
+            assignedToId: document.getElementById('mf-assignedToId').value.trim() || me.id,
             date: document.getElementById('mf-date').value,
             time: document.getElementById('mf-time').value,
             duration: document.getElementById('mf-duration').value ? parseInt(document.getElementById('mf-duration').value, 10) : null,
             type: document.getElementById('mf-type').value || null,
             status: document.getElementById('mf-status').value || null,
             location: document.getElementById('mf-location').value || null,
-            notes: document.getElementById('mf-notes').value || null
+            noteMessage: document.getElementById('mf-noteMessage').value || null
         };
         const btn = document.getElementById('mf-btn');
         btn.disabled = true;
@@ -311,7 +314,7 @@
             }
             msg.textContent = 'Meeting created';
             document.getElementById('meeting-form').reset();
-            document.getElementById('mf-assignedTo').value = me.id || '';
+            document.getElementById('mf-assignedToId').value = me.id || '';
             loadMeetings();
         } catch (err) {
             msg.textContent = err.message || 'Failed to create meeting';
