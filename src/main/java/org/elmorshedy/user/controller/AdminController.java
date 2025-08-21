@@ -2,7 +2,9 @@ package org.elmorshedy.user.controller;
 
 import org.bson.types.ObjectId;
 import org.elmorshedy.user.model.ChangeRoleRequest;
+import org.elmorshedy.user.model.Role;
 import org.elmorshedy.user.model.User;
+import org.elmorshedy.user.repo.RoleRepo;
 import org.elmorshedy.user.service.UserServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +24,6 @@ public class AdminController {
         return userService.findAlluser();
     }
 
-//    @GetMapping("")
-
     @PutMapping("/{userId}/role")
     public ResponseEntity<User> changeUserRole(
             @PathVariable ObjectId userId,
@@ -33,6 +33,13 @@ public class AdminController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    //test method delete it
+    @Autowired
+    RoleRepo roleRepo;
+    @GetMapping("/role")
+    public List<Role> findAllRoles() {
+        return roleRepo.findAll();
+    }
 
 }
 

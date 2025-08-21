@@ -9,10 +9,8 @@ import org.elmorshedy.security.request.SignupRequest;
 import org.elmorshedy.security.response.LoginResponse;
 import org.elmorshedy.security.response.MessageResponse;
 import org.elmorshedy.security.response.UserInfoResponse;
-import org.elmorshedy.user.model.User;
+import org.elmorshedy.user.model.*;
 //import org.elmorshedy.user.UserService;
-import org.elmorshedy.user.model.AppRole;
-import org.elmorshedy.user.model.Role;
 import org.elmorshedy.user.repo.RoleRepo;
 import org.elmorshedy.user.repo.UserRepo;
 import org.elmorshedy.user.service.UserServiceImp;
@@ -23,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -105,35 +104,19 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         } else {
             String roleStr = strRoles.iterator().next();
-            if (roleStr.equals("ADMIN") || roleStr.equals("admin")) {
+            if (roleStr.equalsIgnoreCase("ADMIN")) {
                 return ResponseEntity
                         .badRequest()
-                        .body(new MessageResponse("Error: Admin role is restricted and cannot be assigned!"));
-            }
-//            else if (roleStr.equals("SALES_ADMIN") || roleStr.equals("sales_admin")) {
-//                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
-//                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-//            } else if (roleStr.equals("TEAM_LEADER") || roleStr.equals("team_leader")) {
-//                role = roleRepo.findByRolename(AppRole.ROLE_ADMIN)
-//                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-//            }
-            else {
+                        .body(new MessageResponse("Error: Admin role is restricted and cannot be assigned!"));} else {
                 role = roleRepo.findByRolename(AppRole.SALES_REP)
                         .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             }
-//            user.setAccountNonLocked(true);
-//            user.setAccountNonExpired(true);
-//            user.setCredentialsNonExpired(true);
-//            user.setEnabled(true);
-//            user.setCredentialsExpiredData(LocalDate.now().plusYears(1));
-//            user.setAccountExpiryData(LocalDate.now().plusYears(1));
-//            user.setTwofactorEnabled(false);
-//            user.setSignUpMethod("email");
         }
         user.setRole(role);
         userRepo.save(user);
         log.info("User registered successfully!");
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        UserDTO userDTO = UserMapper.toUserDTO(user);
+        return ResponseEntity.ok(userDTO);
     }
 
     @GetMapping("/user")
@@ -141,8 +124,7 @@ public class AuthController {
         User user = userService.findbyusername(userDetails.getUsername());
 
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(item ->
-                        item.getAuthority()).
+                .map(GrantedAuthority::getAuthority).
                 collect(Collectors.toList());
         UserInfoResponse response = new UserInfoResponse(
                 user.getId(),

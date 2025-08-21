@@ -5,6 +5,7 @@ import org.elmorshedy.lead.model.Lead;
 import org.elmorshedy.lead.repo.LeadRepo;
 import org.elmorshedy.meeting.model.Location;
 import org.elmorshedy.meeting.model.Meeting;
+import org.elmorshedy.meeting.model.MeetingDTO;
 import org.elmorshedy.meeting.model.MeetingRequest;
 import org.elmorshedy.meeting.repo.meetingRepo;
 import org.elmorshedy.note.Repo.NoteRepo;
@@ -20,11 +21,13 @@ public class MeetingServiceImp implements MeetingService {
     private final meetingRepo meetingRepo;
     private final NoteRepo noteRepo;
     private final LeadRepo leadRepo;
+    private final MeetingMapper meetingMapper;
 
-    public MeetingServiceImp(meetingRepo meetingRepo, NoteRepo noteRepo, LeadRepo leadRepo) {
+    public MeetingServiceImp(meetingRepo meetingRepo, NoteRepo noteRepo, LeadRepo leadRepo, MeetingMapper meetingMapper) {
         this.meetingRepo = meetingRepo;
         this.noteRepo = noteRepo;
         this.leadRepo = leadRepo;
+        this.meetingMapper = meetingMapper;
     }
 
     // New DTO-based create
@@ -36,14 +39,18 @@ public class MeetingServiceImp implements MeetingService {
         return meetingRepo.save(meeting);
     }
 
-    @Override
-    public List<Meeting> getAllMeetings() {
-        return meetingRepo.findAll();
+    public List<MeetingDTO> getAllMeetings() {
+        return meetingRepo.findAll()
+                .stream()
+                .map(meetingMapper::toDTO)
+                .toList();
     }
 
-    @Override
-    public List<Meeting> getMeetingsByUser(String userId) {
-        return meetingRepo.findByAssignedToId(userId);
+    public List<MeetingDTO> getMeetingsByUser(String userId) {
+        return meetingRepo.findByAssignedToId(userId)
+                .stream()
+                .map(meetingMapper::toDTO)
+                .toList();
     }
 
     @Override

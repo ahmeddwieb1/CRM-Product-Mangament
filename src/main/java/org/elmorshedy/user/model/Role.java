@@ -19,9 +19,6 @@ public class Role {
 
     private AppRole rolename;
 
-    @JsonBackReference
-    private Set<User> users = new HashSet<>();
-
     public Role(AppRole rolename) {
         this.rolename = rolename;
     }

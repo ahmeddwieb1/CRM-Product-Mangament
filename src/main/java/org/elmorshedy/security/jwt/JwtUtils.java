@@ -56,17 +56,34 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Validate");
-            Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
+            if (authToken == null) {
+                logger.debug("JWT token is null");
+                return false;
+            }
+            String token = authToken.trim();
+            if (token.isEmpty()) {
+                logger.debug("JWT token is empty");
+                return false;
+            }
+            // Quick shape check: header.payload.signature
+            long dotCount = token.chars().filter(ch -> ch == '.').count();
+            if (dotCount != 2) {
+                logger.warn("JWT token has invalid compact form (expected 2 dots)");
+                return false;
+            }
+            Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token);
+            System.out.println("vaildat");
             return true;
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
+            logger.warn("JWT token is expired: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.warn("Invalid JWT token: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            logger.error("JWT token is unsupported: {}", e.getMessage());
+            logger.warn("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty: {}", e.getMessage());
+            logger.warn("JWT claims string is empty: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.debug("Unexpected error when validating JWT: {}", e.getMessage());
         }
         return false;
     }

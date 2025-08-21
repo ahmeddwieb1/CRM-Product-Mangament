@@ -4,8 +4,10 @@ import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
 import org.elmorshedy.lead.model.CreateLead;
+import org.elmorshedy.lead.model.LeadDTO;
 import org.elmorshedy.lead.model.UpdateLead;
 import org.elmorshedy.lead.service.LeadServiceImp;
+import org.elmorshedy.user.repo.RoleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,9 +36,8 @@ public class LeadController {
         }
     }
 
-
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateLead( @PathVariable ObjectId id, @RequestBody UpdateLead leadRequest, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> updateLead(@PathVariable ObjectId id, @RequestBody UpdateLead leadRequest, @AuthenticationPrincipal UserDetails userDetails) {
         try {
             Lead updatedLead = leadService.updateLead(id, leadRequest, userDetails.getUsername());
             return ResponseEntity.ok(updatedLead);
@@ -47,26 +48,28 @@ public class LeadController {
 
     //done
     @GetMapping("/{id}")
-    public Lead getLeadById(@PathVariable ObjectId id) {
-        return leadService.getLead(id);
+    public ResponseEntity<LeadDTO> getLeadById(@PathVariable ObjectId id) {
+        return leadService.getLead(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     //done
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public List<Lead> getlead() {
-        return leadService.getLeads();
+    public List<LeadDTO> getlead() {
+        return leadService.getAllLeads();
     }
+
     @GetMapping("/{userid}/user")
     public List<Lead> getLeadsByUserid(@PathVariable ObjectId userid) {
         return leadService.getLeadsByUserid(userid);
     }
 
-
-
     @DeleteMapping("/{id}")
-    public void deletelead(@PathVariable ObjectId id) {
+    public ResponseEntity<String> deleteLead(@PathVariable ObjectId id) {
         leadService.deleteLead(id);
+        return ResponseEntity.ok("Lead deleted successfully");
     }
 
 

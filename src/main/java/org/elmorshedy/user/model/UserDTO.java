@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private Long id;
+    private String id;
     private String username;
     private String email;
-//    private Role role;
+    private RoleDTO role;
 //    private boolean enabled;
 //    private boolean accountNonExpired;
 //    private boolean accountNonLocked;

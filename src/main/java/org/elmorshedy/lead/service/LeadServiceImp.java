@@ -3,8 +3,10 @@ package org.elmorshedy.lead.service;
 import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
 import org.elmorshedy.lead.model.CreateLead;
+import org.elmorshedy.lead.model.LeadDTO;
 import org.elmorshedy.lead.model.UpdateLead;
 import org.elmorshedy.lead.repo.LeadRepo;
+import org.elmorshedy.note.models.Note;
 import org.elmorshedy.user.model.AppRole;
 import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class LeadServiceImp implements LeadService {
@@ -28,13 +32,39 @@ public class LeadServiceImp implements LeadService {
         this.userService = userService;
     }
 //done
+ @Override
+public Optional<LeadDTO> getLead(ObjectId id) {
+    return leadRepo.findById(id)
+            .map(lead -> new LeadDTO(
+                    lead.getId().toHexString(),
+                    lead.getLeadName(),
+                    lead.getPhone(),
+                    lead.getBudget(),
+                    lead.getLeadSource() != null ? lead.getLeadSource().toString() : null,
+                    lead.getLeadStatus() != null ? lead.getLeadStatus().toString() : null,
+                    lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null,
+                    lead.getNotes().stream()
+                            .map(Note::getContent)
+                            .collect(Collectors.toList())
+            ));
+}
+
     @Override
-    public Lead getLead(ObjectId id) {
-        return leadRepo.findById(id).orElse(null);
-    }
-    @Override
-    public List<Lead> getLeads() {
-        return leadRepo.findAll();
+    public List<LeadDTO> getAllLeads() {
+        return leadRepo.findAll().stream()
+                .map(lead -> new LeadDTO(
+                        lead.getId().toHexString(),
+                        lead.getLeadName(),
+                        lead.getPhone(),
+                        lead.getBudget(),
+                        lead.getLeadSource() != null ? lead.getLeadSource().toString() : null,
+                        lead.getLeadStatus() != null ? lead.getLeadStatus().toString() : null,
+                        lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null,
+                        lead.getNotes().stream()
+                                .map(Note::getContent)
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -95,6 +125,9 @@ public class LeadServiceImp implements LeadService {
 
     @Override
     public void deleteLead(ObjectId id) {
+        if (!leadRepo.existsById(id)) {
+            throw new RuntimeException("Lead not found with id: " + id);
+        }
         leadRepo.deleteById(id);
     }
 
