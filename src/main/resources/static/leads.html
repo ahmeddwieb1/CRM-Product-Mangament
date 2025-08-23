@@ -160,6 +160,7 @@
                         </select>
                     </div>
                     <button class="btn" id="lf-btn" type="submit" style="margin-top:8px">Create Lead</button>
+                    <button class="btn" id="lf-cancel" type="button" style="margin-top:8px;background:#64748b;display:none;">Cancel</button>
                     <div id="lf-msg" class="muted" style="margin-top:6px"></div>
                 </form>
             </section>
@@ -196,6 +197,29 @@
 
     const listEl = document.getElementById('list');
     const detailsEl = document.getElementById('details');
+    let leads = [];
+    let selectedLead = null;
+
+    function populateFormForUpdate(l) {
+        selectedLead = l;
+        document.getElementById('lf-name').value = l.leadName || '';
+        document.getElementById('lf-phone').value = l.phone || '';
+        document.getElementById('lf-budget').value = l.budget || '';
+        document.getElementById('lf-source').value = l.leadSource || '';
+        document.getElementById('lf-status').value = l.leadStatus || '';
+        document.getElementById('lf-assigned').value = (l.assignedTo && l.assignedTo.username) || l.assignedTo || '';
+
+        document.getElementById('lf-btn').textContent = 'Update Lead';
+        document.getElementById('lf-cancel').style.display = 'inline-block';
+    }
+
+    function resetForm() {
+        selectedLead = null;
+        document.getElementById('lead-form').reset();
+        document.getElementById('lf-assigned').value = user;
+        document.getElementById('lf-btn').textContent = 'Create Lead';
+        document.getElementById('lf-cancel').style.display = 'none';
+    }
 
     function renderDetails(l) {
         if (!l) {
@@ -225,23 +249,23 @@
         if(!leads || leads.length===0){
             listEl.innerHTML = '<span class="muted">No leads</span>';
             renderDetails(null);
+            resetForm();
             return;
         }
         listEl.innerHTML = '';
         leads.forEach((l, idx)=>{
             const item = document.createElement('div');
-            item.className = 'item' + (idx===0?' active':'');
+            item.className = 'item';
 
-            // النص الأساسي لليد
             const textSpan = document.createElement('span');
             textSpan.textContent = `${l.leadName||'Lead'} (${l.leadStatus||''})`;
             textSpan.addEventListener('click', ()=>{
                 document.querySelectorAll('.item').forEach(el=> el.classList.remove('active'));
                 item.classList.add('active');
                 renderDetails(l);
+                populateFormForUpdate(l);
             });
 
-            // زرار delete
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
             deleteBtn.style.marginLeft = '10px';
@@ -250,13 +274,13 @@
             deleteBtn.style.border = 'none';
             deleteBtn.style.cursor = 'pointer';
             deleteBtn.addEventListener('click', async (e)=>{
-                e.stopPropagation(); // عشان ما يفتحش التفاصيل مع الضغط
+                e.stopPropagation();
                 if(confirm(`Are you sure you want to delete lead "${l.leadName}"?`)){
                     try {
                         const res = await authFetch(`/api/lead/${l.id}`, {method:'DELETE'});
                         if(res.ok){
                             alert('Lead deleted successfully');
-                            window.location.reload(); // إعادة تحميل الصفحة
+                            loadLeads();
                         } else {
                             alert('Failed to delete lead');
                         }
@@ -270,7 +294,13 @@
             item.appendChild(deleteBtn);
             listEl.appendChild(item);
         });
-        renderDetails(leads[0]);
+
+        if (leads.length > 0) {
+            const firstItem = listEl.firstChild;
+            firstItem.classList.add('active');
+            renderDetails(leads[0]);
+            populateFormForUpdate(leads[0]);
+        }
     }
 
 
@@ -278,15 +308,15 @@
         // try admin view
         let res = await authFetch('/api/lead');
         if (res.status === 200) {
-            const data = await res.json();
-            renderList(data);
+            leads = await res.json();
+            renderList(leads);
             return;
         }
         if (res.status === 403) {
             // fallback to user-specific
             const me = await authFetch('/api/auth/user').then(r => r.json());
-            const data = await authFetch(`/api/lead/${me.id}/user`).then(r => r.ok ? r.json() : []);
-            renderList(data);
+            leads = await authFetch(`/api/lead/${me.id}/user`).then(r => r.ok ? r.json() : []);
+            renderList(leads);
             return;
         }
         listEl.innerHTML = '<span class="muted">Failed to load leads</span>';
@@ -294,6 +324,7 @@
 
     // Pre-fill assigned to username
     document.getElementById('lf-assigned').value = user;
+    document.getElementById('lf-cancel').addEventListener('click', resetForm);
 
     document.getElementById('lead-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -309,26 +340,36 @@
         };
         const btn = document.getElementById('lf-btn');
         btn.disabled = true;
-        btn.textContent = 'Creating...';
+
         try {
-            const res = await authFetch('/api/lead', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
+            let res;
+            if (selectedLead) {
+                btn.textContent = 'Updating...';
+                res = await authFetch(`/api/lead/${selectedLead.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+            } else {
+                btn.textContent = 'Creating...';
+                res = await authFetch('/api/lead', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+            }
+
             if (!res.ok) {
                 const t = await res.json().catch(() => ({error: 'Failed'}));
-                throw new Error(t.error || 'Failed to create lead');
+                throw new Error(t.error || 'Failed to save lead');
             }
-            msg.textContent = 'Lead created';
-            document.getElementById('lead-form').reset();
-            document.getElementById('lf-assigned').value = user;
+            msg.textContent = selectedLead ? 'Lead updated' : 'Lead created';
+            resetForm();
             loadLeads();
         } catch (err) {
-            msg.textContent = err.message || 'Failed to create lead';
+            msg.textContent = err.message || 'Failed to save lead';
         } finally {
             btn.disabled = false;
-            btn.textContent = 'Create Lead';
         }
     });
 
