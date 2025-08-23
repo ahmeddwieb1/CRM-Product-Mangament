@@ -12,7 +12,7 @@ public class MeetingRequest {
     private String assignedToId;
     private LocalDate date;
     private LocalTime time;
-    private Integer duration; // use wrapper to allow null (no update)
+    private Integer duration;
     private Type type;
     private Status status;
     private String location;

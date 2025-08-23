@@ -26,14 +26,14 @@ public class MeetingController {
     }
 
     @PostMapping
-    public ResponseEntity<Meeting> createMeeting(@RequestBody MeetingRequest request) {
-        Meeting created = meetingService.addMeeting(request);
+    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody MeetingRequest request) {
+        MeetingDTO created = meetingService.addMeeting(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
     public ResponseEntity<List<MeetingDTO>> getAllMeetings() {
-        return ResponseEntity.ok(meetingService.getAllMeetings());
+        return ResponseEntity.ok(meetingService.getAllMeetings1());
     }
 
     @GetMapping("/user/{userId}")

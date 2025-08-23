@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class MeetingServiceImp implements MeetingService {
@@ -23,7 +24,10 @@ public class MeetingServiceImp implements MeetingService {
     private final LeadRepo leadRepo;
     private final MeetingMapper meetingMapper;
 
-    public MeetingServiceImp(meetingRepo meetingRepo, NoteRepo noteRepo, LeadRepo leadRepo, MeetingMapper meetingMapper) {
+    public MeetingServiceImp(meetingRepo meetingRepo,
+                             NoteRepo noteRepo,
+                             LeadRepo leadRepo,
+                             MeetingMapper meetingMapper) {
         this.meetingRepo = meetingRepo;
         this.noteRepo = noteRepo;
         this.leadRepo = leadRepo;
@@ -32,11 +36,13 @@ public class MeetingServiceImp implements MeetingService {
 
     // New DTO-based create
     @Override
-    public Meeting addMeeting(MeetingRequest request) {
+    public MeetingDTO  addMeeting(MeetingRequest request) {
         Meeting meeting = new Meeting();
         applyRequestToMeeting(request, meeting);
         validateMeeting(meeting);
-        return meetingRepo.save(meeting);
+        Meeting saved =
+                meetingRepo.save(meeting);
+        return meetingMapper.toDTO(saved);
     }
 
     public List<MeetingDTO> getAllMeetings() {
@@ -44,6 +50,11 @@ public class MeetingServiceImp implements MeetingService {
                 .stream()
                 .map(meetingMapper::toDTO)
                 .toList();
+    }
+    public List<MeetingDTO> getAllMeetings1() {
+        return meetingRepo.findAll().stream()
+                .map(meetingMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public List<MeetingDTO> getMeetingsByUser(String userId) {
@@ -124,10 +135,7 @@ public class MeetingServiceImp implements MeetingService {
             if (request.getClientId() != null) {
                 try {
                     ObjectId leadId = new ObjectId(request.getClientId());
-                    Lead lead = leadRepo.findById(leadId).orElse(null);
-                    if (lead != null) {
-                        note.setLead(lead);
-                    }
+                    leadRepo.findById(leadId).ifPresent(note::setLead);
                 } catch (IllegalArgumentException ignored) {
                     // clientId not a valid ObjectId; leave lead null
                 }
