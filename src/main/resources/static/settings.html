@@ -185,22 +185,71 @@
 
     const usersEl = document.getElementById('users');
     const detailsEl = document.getElementById('details');
+    let users = [];
+    let roles = [];
 
-    // todo
+    async function updateRole(userId, rolename) {
+        try {
+            const res = await authFetch(`/api/admin/${userId}/role`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rolename})
+            });
+            if (!res.ok) {
+                const t = await res.json().catch(() => ({message: 'Failed to update role'}));
+                throw new Error(t.message || 'Failed to update role');
+            }
+            alert('Role updated successfully');
+            loadUsers();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
     function renderDetails(u) {
         if (!u) {
-            detailsEl.innerHTML = '<span class="muted">Select a Sales to view details</span>';
+            detailsEl.innerHTML = '<span class="muted">Select a user to view details</span>';
             return;
         }
         const role = (u.role && (u.role.rolename || u.role.name)) || 'N/A';
+        const isMe = u.username === user;
+        const isAdmin = role === 'ADMIN';
+
         detailsEl.classList.remove('muted');
         detailsEl.innerHTML = `
       <div class="kv">
         <div>Username</div><div><strong>${u.username || ''}</strong></div>
         <div>Email</div><div>${u.email || ''}</div>
-        <div>Role</div><div>${role}</div>
+        <div>Role</div><div id="user-role-div"></div>
       </div>
     `;
+
+        const roleDiv = document.getElementById('user-role-div');
+        if (isMe || isAdmin) {
+            roleDiv.textContent = role;
+        } else {
+            const select = document.createElement('select');
+            select.style.padding = '8px';
+            select.style.border = '1px solid #cbd5e1';
+            select.style.borderRadius = '8px';
+            roles.forEach(r => {
+                const option = document.createElement('option');
+                option.value = r.rolename;
+                option.textContent = r.rolename;
+                if (r.rolename === role) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            const updateBtn = document.createElement('button');
+            updateBtn.textContent = 'Update Role';
+            updateBtn.className = 'btn';
+            updateBtn.style.marginLeft = '10px';
+            updateBtn.onclick = () => updateRole(u.id, select.value);
+
+            roleDiv.appendChild(select);
+            roleDiv.appendChild(updateBtn);
+        }
     }
 
     function renderList(users) {
@@ -212,27 +261,75 @@
         usersEl.innerHTML = '';
         users.forEach((u, idx) => {
             const item = document.createElement('div');
-            item.className = 'user-item' + (idx === 0 ? ' active' : '');
+            item.className = 'user-item';
             item.textContent = `${u.username} ${u.email ? '(' + u.email + ')' : ''}`;
             item.addEventListener('click', () => {
                 document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
                 item.classList.add('active');
                 renderDetails(u);
             });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.style.marginLeft = '10px';
+            deleteBtn.style.color = 'white';
+            deleteBtn.style.background = 'red';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.cursor = 'not-allowed';
+            deleteBtn.disabled = true;
+            deleteBtn.title = 'User deletion is not supported by the API.';
+
+            item.appendChild(deleteBtn);
             usersEl.appendChild(item);
         });
-        renderDetails(users[0]);
+
+        if (users.length > 0) {
+            const firstItem = usersEl.firstChild;
+            firstItem.classList.add('active');
+            renderDetails(users[0]);
+        }
     }
 
-    authFetch('/api/admin')
-        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status: r.status, text: t})))
-        .then(renderList)
-        .catch(err => {
+    async function loadInitialData() {
+        try {
+            const [usersRes, rolesRes] = await Promise.all([
+                authFetch('/api/admin'),
+                authFetch('/api/admin/role')
+            ]);
+
+            if (usersRes.ok) {
+                users = await usersRes.json();
+                renderList(users);
+            } else {
+                const err = {status: usersRes.status};
+                throw err;
+            }
+
+            if (rolesRes.ok) {
+                roles = await rolesRes.json();
+            }
+
+        } catch (err) {
             usersEl.innerHTML = (err && err.status === 403)
                 ? '<span class="muted">Forbidden: Admins only</span>'
                 : '<span class="muted">Failed to load users</span>';
-            detailsEl.innerHTML = '<span class="muted">No Sales selected</span>';
-        });
+            detailsEl.innerHTML = '<span class="muted">No user selected</span>';
+        }
+    }
+
+    function loadUsers() {
+        authFetch('/api/admin')
+            .then(r => r.ok ? r.json() : Promise.reject({status: r.status}))
+            .then(data => {
+                users = data;
+                renderList(users);
+            })
+            .catch(err => {
+                usersEl.innerHTML = (err && err.status === 403)
+                    ? '<span class="muted">Forbidden: Admins only</span>'
+                    : '<span class="muted">Failed to load users</span>';
+            });
+    }
 
     // Add user submit
     document.getElementById('add-user-form').addEventListener('submit', async (e) => {
@@ -269,12 +366,7 @@
             }
             msg.textContent = 'User added successfully';
             document.getElementById('add-user-form').reset();
-            // refresh users
-            authFetch('/api/admin')
-                .then(r => r.ok ? r.json() : [])
-                .then(renderList)
-                .catch(() => {
-                });
+            loadUsers();
         } catch (err) {
             msg.textContent = err.message || 'Failed to add user';
         } finally {
@@ -282,6 +374,8 @@
             btn.textContent = 'Add User';
         }
     });
+
+    loadInitialData();
 </script>
 </body>
 </html>

@@ -133,7 +133,7 @@
                 <form id="meeting-form">
                     <div class="row">
                         <input id="mf-title" placeholder="Title" required/>
-                        <input id="mf-clientName" placeholder="Client Name"/>
+                        <input id="mf-clientId" placeholder="Client ID"/>
                     </div>
                     <div class="row">
                         <input id="mf-date" type="date" required/>
@@ -156,18 +156,17 @@
                             <option>CANCELLED</option>
                         </select>
                         <select id="mf-location">
-                            <option value="">Status</option>
+                            <option value="">Location</option>
                             <option>ONLINE</option>
                             <option>OFFLINE</option>
                         </select>
                     </div>
                     <div class="row">
-                        <input id="mf-assignedTo" placeholder="Assigned To" required/>
-                        <input id="mf-notes" placeholder="Note message"/>
+                        <input id="mf-assignedToId" placeholder="Assigned To ID" required/>
+                        <input id="mf-noteMessage" placeholder="Note message"/>
                     </div>
                     <button class="btn" id="mf-btn" type="submit" style="margin-top:8px">Create Meeting</button>
-                    <!--                    <button class="upt" id="mf-upt" type="reset" style="margin-top:8px">Update Meeting</button>-->
-                    <!--                    <button class="det" id="mf-det" type="button" style="margin-top:8px">delete Meeting</button>-->
+                    <button class="btn" id="mf-cancel" type="button" style="margin-top:8px;background:#64748b;display:none;">Cancel</button>
                     <div id="mf-msg" class="muted" style="margin-top:6px"></div>
                 </form>
             </section>
@@ -196,7 +195,7 @@
         return fetch(url, {...options, headers});
     }
 
-    const me = {id: null, username: localStorage.getItem('username') || 'User'};
+    const me = {id: null, username: localStorage.getItem('username') || 'User', roles: []};
     document.getElementById('welcome').textContent = 'Welcome, ' + me.username;
     document.getElementById('logout').addEventListener('click', () => {
         localStorage.clear();
@@ -205,6 +204,35 @@
 
     const listEl = document.getElementById('list');
     const detailsEl = document.getElementById('details');
+    let meetings = [];
+    let selectedMeeting = null;
+    const leadNameToIdMap = new Map();
+    const userNameToIdMap = new Map();
+
+    function populateFormForUpdate(m) {
+        selectedMeeting = m;
+        document.getElementById('mf-title').value = m.title || '';
+        document.getElementById('mf-clientId').value = leadNameToIdMap.get(m.clientName) || '';
+        document.getElementById('mf-date').value = m.date || '';
+        document.getElementById('mf-time').value = m.time || '';
+        document.getElementById('mf-duration').value = m.duration || '';
+        document.getElementById('mf-type').value = m.type || '';
+        document.getElementById('mf-status').value = m.status || '';
+        document.getElementById('mf-location').value = m.location || '';
+        document.getElementById('mf-assignedToId').value = userNameToIdMap.get(m.assignedTo) || '';
+        document.getElementById('mf-noteMessage').value = m.notes ? m.notes.join('\n') : '';
+
+        document.getElementById('mf-btn').textContent = 'Update Meeting';
+        document.getElementById('mf-cancel').style.display = 'inline-block';
+    }
+
+    function resetForm() {
+        selectedMeeting = null;
+        document.getElementById('meeting-form').reset();
+        document.getElementById('mf-assignedToId').value = me.id || '';
+        document.getElementById('mf-btn').textContent = 'Create Meeting';
+        document.getElementById('mf-cancel').style.display = 'none';
+    }
 
     function renderDetails(m) {
         if (!m) {
@@ -219,11 +247,14 @@
         </h3>
         <div class="kv">
             <div>Date</div><div>${m.date || ''}</div>
+            <div>Time</div><div>${m.time || ''}</div>
             <div>Duration</div><div>${m.duration || ''} hours</div>
             <div>Location</div><div>${m.location || ''}</div>
             <div>Status</div><div>${m.status || ''}</div>
+            <div>Type</div><div>${m.type || ''}</div>
             <div>Client Name</div><div>${m.clientName || ''}</div>
-            <div>Notes</div><div>${m.notes ? m.notes.replace(/\n/g, '<br>') : '<span class="muted">No notes</span>'}</div>
+            <div>Assigned To</div><div>${m.assignedTo || ''}</div>
+            <div>Notes</div><div>${m.notes && m.notes.length ? m.notes.join('<br>') : '<span class="muted">No notes</span>'}</div>
         </div>
     `;
     }
@@ -238,16 +269,24 @@
         listEl.innerHTML = '';
         meetings.forEach((m, idx) => {
             const item = document.createElement('div');
-            item.className = 'item' + (idx === 0 ? ' active' : '');
+            item.className = 'item';
             item.textContent = `${m.title || 'Meeting'} (${m.status || ''})`;
             item.addEventListener('click', () => {
                 document.querySelectorAll('.item').forEach(el => el.classList.remove('active'));
                 item.classList.add('active');
                 renderDetails(m);
+                populateFormForUpdate(m);
             });
             listEl.appendChild(item);
         });
-        renderDetails(meetings[0]);
+        if (meetings.length > 0) {
+            const firstItem = listEl.firstChild;
+            firstItem.classList.add('active');
+            renderDetails(meetings[0]);
+            populateFormForUpdate(meetings[0]);
+        } else {
+            resetForm();
+        }
     }
 
     async function deleteMeeting(id) {
@@ -256,9 +295,24 @@
         const res = await authFetch(`/api/meetings/${id}`, {method: 'DELETE'});
         if (res.ok) {
             alert("Meeting deleted successfully");
-            window.location.reload();
+            loadMeetings();
         } else {
             alert("Failed to delete meeting");
+        }
+    }
+
+    async function loadAdminData() {
+        const [leadsRes, usersRes] = await Promise.all([
+            authFetch('/api/lead'),
+            authFetch('/api/admin')
+        ]);
+        if (leadsRes.ok) {
+            const leads = await leadsRes.json();
+            leads.forEach(lead => leadNameToIdMap.set(lead.leadName, lead.id));
+        }
+        if (usersRes.ok) {
+            const users = await usersRes.json();
+            users.forEach(user => userNameToIdMap.set(user.username, user.id));
         }
     }
 
@@ -266,15 +320,19 @@
         const info = await authFetch('/api/auth/user').then(r => r.json()).catch(() => null);
         if (info && info.id) {
             me.id = info.id;
+            me.roles = info.roles || [];
+            if (me.roles.includes('ROLE_ADMIN')) {
+                await loadAdminData();
+            }
         }
-        document.getElementById('mf-assignedTo').value = me.id || '';
+        document.getElementById('mf-assignedToId').value = me.id || '';
     }
 
     async function loadMeetings() {
         const res = await authFetch('/api/meetings');
         if (res.ok) {
-            const data = await res.json();
-            renderList(data);
+            meetings = await res.json();
+            renderList(meetings);
         } else {
             listEl.innerHTML = '<span class="muted">Failed to load meetings</span>';
         }
@@ -286,40 +344,52 @@
         msg.textContent = '';
         const body = {
             title: document.getElementById('mf-title').value.trim(),
-            clientName: document.getElementById('mf-clientName').value.trim() || null,
-            assignedTo: document.getElementById('mf-assignedTo').value.trim() || me.id,
+            clientId: document.getElementById('mf-clientId').value.trim() || null,
+            assignedToId: document.getElementById('mf-assignedToId').value.trim() || me.id,
             date: document.getElementById('mf-date').value,
             time: document.getElementById('mf-time').value,
             duration: document.getElementById('mf-duration').value ? parseInt(document.getElementById('mf-duration').value, 10) : null,
             type: document.getElementById('mf-type').value || null,
             status: document.getElementById('mf-status').value || null,
             location: document.getElementById('mf-location').value || null,
-            notes: document.getElementById('mf-notes').value || null
+            noteMessage: document.getElementById('mf-noteMessage').value || null
         };
         const btn = document.getElementById('mf-btn');
         btn.disabled = true;
-        btn.textContent = 'Creating...';
+
         try {
-            const res = await authFetch('/api/meetings', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
+            let res;
+            if (selectedMeeting) {
+                btn.textContent = 'Updating...';
+                res = await authFetch(`/api/meetings/${selectedMeeting.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+            } else {
+                btn.textContent = 'Creating...';
+                res = await authFetch('/api/meetings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+            }
+
             if (!res.ok) {
                 const t = await res.text();
-                throw new Error(t || 'Failed to create meeting');
+                throw new Error(t || 'Failed to save meeting');
             }
-            msg.textContent = 'Meeting created';
-            document.getElementById('meeting-form').reset();
-            document.getElementById('mf-assignedTo').value = me.id || '';
+            msg.textContent = selectedMeeting ? 'Meeting updated' : 'Meeting created';
+            resetForm();
             loadMeetings();
         } catch (err) {
-            msg.textContent = err.message || 'Failed to create meeting';
+            msg.textContent = err.message || 'Failed to save meeting';
         } finally {
             btn.disabled = false;
-            btn.textContent = 'Create Meeting';
         }
     });
+
+    document.getElementById('mf-cancel').addEventListener('click', resetForm);
     loadMe().then(loadMeetings);
 
     // // todo update method
