@@ -6,7 +6,6 @@ import org.elmorshedy.lead.model.CreateLead;
 import org.elmorshedy.lead.model.LeadDTO;
 import org.elmorshedy.lead.model.UpdateLead;
 import org.elmorshedy.lead.repo.LeadRepo;
-import org.elmorshedy.note.models.Note;
 import org.elmorshedy.user.model.AppRole;
 import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
@@ -42,11 +41,12 @@ public Optional<LeadDTO> getLead(ObjectId id) {
                     lead.getBudget(),
                     lead.getLeadSource() != null ? lead.getLeadSource().toString() : null,
                     lead.getLeadStatus() != null ? lead.getLeadStatus().toString() : null,
-                    lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null,
-                    lead.getNotes().stream()
-                            .map(Note::getContent)
-                            .collect(Collectors.toList())
-            ));
+                    lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null
+
+//                    ,lead.getNotes().stream()
+//                            .map(Note::getContent)
+//                            .collect(Collectors.toList()
+                            ));
 }
 
     @Override
@@ -59,10 +59,10 @@ public Optional<LeadDTO> getLead(ObjectId id) {
                         lead.getBudget(),
                         lead.getLeadSource() != null ? lead.getLeadSource().toString() : null,
                         lead.getLeadStatus() != null ? lead.getLeadStatus().toString() : null,
-                        lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null,
-                        lead.getNotes().stream()
-                                .map(Note::getContent)
-                                .collect(Collectors.toList())
+                        lead.getAssignedTo() != null ? lead.getAssignedTo().getUsername() : null
+//                        ,lead.getNotes().stream()
+//                                .map(Note::getContent)
+//                                .collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
     }

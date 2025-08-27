@@ -27,40 +27,24 @@ public class MeetingMapper {
 
     public MeetingDTO toDTO(Meeting meeting) {
         MeetingDTO dto = new MeetingDTO();
-
-        dto.setId(meeting.getId().toHexString());
+        dto.setId(meeting.getId().toString());
         dto.setTitle(meeting.getTitle());
-
-        if (meeting.getClientid() != null) {
-            //todo make best practice don't forget
-//            Lead lead = leadRepo.findById(new ObjectId(meeting.getClientid())).orElse(null);
-            Lead lead = leadRepo.findByLeadName(meeting.getClientid())
-                    .orElse(null);
-            dto.setClientName(lead != null ? lead.getLeadName() : "Unknown Lead");
-        } else {
-            dto.setClientName("Unknown Lead");
-        }
-
-        if (meeting.getAssignedToId() != null) {
-//            User user = userRepo.findById(new ObjectId(meeting.getAssignedToId())).orElse(null);
-            User user = userRepo.findByUsername(meeting.getAssignedToId())
-                    .orElse(null);
-            dto.setAssignedTo(user != null ? user.getUsername() : "Unassigned");
-        } else {
-            dto.setAssignedTo("Unassigned");
-        }
-
         dto.setDate(meeting.getDate());
         dto.setTime(meeting.getTime());
         dto.setDuration(meeting.getDuration());
         dto.setType(meeting.getType());
         dto.setStatus(meeting.getStatus());
         dto.setLocation(meeting.getLocation());
-        // Get note content(s)
-        if (meeting.getNote() != null) {
-            dto.setNotes(List.of(meeting.getNote().getContent()));
-        } else {
-            dto.setNotes(Collections.emptyList());
+        dto.setNotes(meeting.getNotes());
+
+        if (meeting.getClientId() != null) {
+            Lead client = leadRepo.findById(meeting.getClientId()).orElse(null);
+            dto.setClientName(client != null ? client.getLeadName() : "Unknown Client");
+        }
+
+        if (meeting.getAssignedToId() != null) {
+            User user = userRepo.findById(meeting.getAssignedToId()).orElse(null);
+            dto.setAssignedTo(user != null ? user.getUsername() : "Unknown User");
         }
 
         return dto;

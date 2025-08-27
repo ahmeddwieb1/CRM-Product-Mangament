@@ -9,11 +9,10 @@ import java.util.List;
 
 public interface MeetingService {
 
-    // New DTO-based methods using MeetingRequest
+
     MeetingDTO addMeeting(MeetingRequest request);
-    Meeting updateMeeting(ObjectId meetingId, MeetingRequest request);
 
     List<MeetingDTO> getAllMeetings();
-    List<MeetingDTO> getMeetingsByUser(String userId);
+
     void deleteMeeting(ObjectId meetingId);
 }

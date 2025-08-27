@@ -9,7 +9,6 @@ import java.util.List;
 public class MeetingDTO {
     private String id;
     private String title;
-    private String clientName;
     private LocalDate date;
     private LocalTime time;
     private int duration;
@@ -17,5 +16,6 @@ public class MeetingDTO {
     private Status status;
     private Location location;
     private String assignedTo;
+    private String clientName;
     private List<String> notes;
 }

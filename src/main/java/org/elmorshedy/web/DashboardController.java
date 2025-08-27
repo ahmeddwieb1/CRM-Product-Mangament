@@ -1,7 +1,7 @@
 package org.elmorshedy.web;
 
 import org.elmorshedy.lead.repo.LeadRepo;
-import org.elmorshedy.meeting.repo.meetingRepo;
+import org.elmorshedy.meeting.repo.MeetingRepo;
 import org.elmorshedy.product.repo.ProductRepo;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class DashboardController {
     @Autowired
     private LeadRepo leadRepo;
     @Autowired
-    private meetingRepo meetingRepo;
+    private MeetingRepo meetingRepo;
     @Autowired
     private ProductRepo productRepo;
 

@@ -177,6 +177,27 @@ async function loadMeetings() {
     }
 }
 
+async function loadLeads() {
+    try {
+        const res = await authFetch('/api/lead');
+        if (res.ok) {
+            const leads = await res.json();
+            const select = document.getElementById('mf-clientId');
+            select.innerHTML = '<option value="">-- Select Client --</option>'; // اعادة القيمة الافتراضية
+            leads.forEach(l => {
+                const opt = document.createElement('option');
+                opt.value = l.id;       // ObjectId أو id
+                opt.textContent = l.name; // الاسم للمستخدم
+                select.appendChild(opt);
+            });
+        } else {
+            console.error("Failed to load leads");
+        }
+    } catch (e) {
+        console.error("Error loading leads", e);
+    }
+}
+
 // ✅ create meeting
 document.getElementById('meeting-form').addEventListener('submit', createMeeting);
 
@@ -264,3 +285,8 @@ async function createMeeting(e) {
 
 // ✅ init
 loadMe().then(loadMeetings);
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadLeads();
+    await loadMe();
+    await loadMeetings();
+});

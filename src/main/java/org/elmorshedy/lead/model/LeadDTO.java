@@ -14,7 +14,7 @@ public class LeadDTO {
     private String leadSource;
     private String leadStatus;
     private String assignedTo; 
-    private List<String> notes;
+//    private List<String> notes;
 
 
 }

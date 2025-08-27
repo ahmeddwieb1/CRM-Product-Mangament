@@ -25,6 +25,11 @@ public class MeetingController {
         this.meetingService = meetingService;
     }
 
+//    @PostMapping
+//    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody MeetingRequest request) {
+//        MeetingDTO created = meetingService.addMeeting(request);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+//    }
     @PostMapping
     public ResponseEntity<MeetingDTO> createMeeting(@RequestBody MeetingRequest request) {
         MeetingDTO created = meetingService.addMeeting(request);
@@ -33,19 +38,19 @@ public class MeetingController {
 
     @GetMapping
     public ResponseEntity<List<MeetingDTO>> getAllMeetings() {
-        return ResponseEntity.ok(meetingService.getAllMeetings1());
+        return ResponseEntity.ok(meetingService.getAllMeetings());
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<MeetingDTO>> getMeetingsByUser(@PathVariable String userId) {
-        return ResponseEntity.ok(meetingService.getMeetingsByUser(userId));
-    }
+//    @GetMapping("/user/{userId}")
+//    public ResponseEntity<List<MeetingDTO>> getMeetingsByUser(@PathVariable String userId) {
+//        return ResponseEntity.ok(meetingService.getMeetingsByUser(userId));
+//    }
 
-    @PutMapping("/{meetingId}")
-    public ResponseEntity<Meeting> updateMeeting(@PathVariable ObjectId meetingId, @RequestBody MeetingRequest request) {
-        Meeting updated = meetingService.updateMeeting(meetingId, request);
-        return ResponseEntity.ok(updated);
-    }
+//    @PutMapping("/{meetingId}")
+//    public ResponseEntity<Meeting> updateMeeting(@PathVariable ObjectId meetingId, @RequestBody MeetingRequest request) {
+//        Meeting updated = meetingService.updateMeeting(meetingId, request);
+//        return ResponseEntity.ok(updated);
+//    }
 
     @DeleteMapping("/{meetingId}")
     public ResponseEntity<Void> deleteMeeting(@PathVariable ObjectId meetingId) {

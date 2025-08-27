@@ -133,7 +133,9 @@
                 <form id="meeting-form">
                     <div class="row">
                         <input id="mf-title" placeholder="Title" required/>
-                        <input id="mf-clientName" placeholder="Client Name"/>
+                        <select id="mf-clientId" name="clientId" required>
+                            <option value="">-- Select Client --</option>
+                        </select>
                     </div>
                     <div class="row">
                         <input id="mf-date" type="date" required/>
