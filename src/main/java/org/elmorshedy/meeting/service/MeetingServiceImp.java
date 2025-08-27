@@ -8,6 +8,7 @@ import org.elmorshedy.meeting.model.*;
 import org.elmorshedy.meeting.repo.MeetingRepo;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -69,6 +70,7 @@ public class MeetingServiceImp implements MeetingService {
                 .map(meetingMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
     @Override
     public void deleteMeeting(ObjectId meetingId) {
         Meeting meeting = meetingRepo.findById(meetingId)
@@ -96,12 +98,59 @@ public class MeetingServiceImp implements MeetingService {
 //                .toList();
 //    }
 
-    //    @Override
-//    public Meeting updateMeeting(ObjectId meetingId, MeetingRequest request) {
-//        Meeting existing = meetingRepo.findById(meetingId)
-//                .orElseThrow(() -> new NoSuchElementException("Meeting not found: " + meetingId));
-//        applyRequestToMeetingPartial(request, existing);
-//        validateMeeting(existing);
-//        return meetingRepo.save(existing);
-//    }
+    @Transactional
+    public MeetingDTO updateMeeting(ObjectId meetingId, MeetingRequest request) {
+        // 1. جيب الـ Meeting الحالية
+        Meeting updatemeeting = meetingRepo.findById(meetingId)
+                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + meetingId));
+
+        // 2. apply التحديثات
+        applyUpdatesToMeeting(request, updatemeeting);
+
+        // 3. validate البيانات بعد التحديث
+        validateMeeting(updatemeeting);
+
+        Meeting saved = meetingRepo.save(updatemeeting);
+        return meetingMapper.toDTO(saved);    }
+
+    private void applyUpdatesToMeeting(MeetingRequest request, Meeting meeting) {
+        if (request.getTitle() != null) {
+            meeting.setTitle(request.getTitle());
+        }
+        if (request.getDate() != null) {
+            meeting.setDate(request.getDate());
+        }
+        if (request.getTime() != null) {
+            meeting.setTime(request.getTime());
+        }
+        if (request.getDuration() != null) {
+            meeting.setDuration(request.getDuration());
+        }
+        if (request.getType() != null) {
+            meeting.setType(request.getType());
+        }
+        if (request.getStatus() != null) {
+            meeting.setStatus(request.getStatus());
+        }
+        if (request.getLocation() != null) {
+            meeting.setLocation(request.getLocation());
+        }
+        if (request.getNotes() != null) {
+            meeting.setNotes(request.getNotes());
+        }
+
+        if (request.getClientId() != null) {
+            if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
+                throw new RuntimeException("Client not found");
+            }
+            meeting.setClientId(new ObjectId(request.getClientId()));
+        }
+
+        if (request.getAssignedToId() != null) {
+            if (!userRepo.existsById(new ObjectId(request.getAssignedToId()))) {
+                throw new RuntimeException("User not found");
+            }
+            meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
+        }
+    }
 }

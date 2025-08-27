@@ -15,4 +15,6 @@ public interface MeetingService {
     List<MeetingDTO> getAllMeetings();
 
     void deleteMeeting(ObjectId meetingId);
+
+    MeetingDTO updateMeeting(ObjectId meetingId, MeetingRequest request);
 }

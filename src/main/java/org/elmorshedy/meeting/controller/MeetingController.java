@@ -46,11 +46,11 @@ public class MeetingController {
 //        return ResponseEntity.ok(meetingService.getMeetingsByUser(userId));
 //    }
 
-//    @PutMapping("/{meetingId}")
-//    public ResponseEntity<Meeting> updateMeeting(@PathVariable ObjectId meetingId, @RequestBody MeetingRequest request) {
-//        Meeting updated = meetingService.updateMeeting(meetingId, request);
-//        return ResponseEntity.ok(updated);
-//    }
+    @PutMapping("/{meetingId}")
+    public ResponseEntity<MeetingDTO> updateMeeting(@PathVariable ObjectId meetingId, @RequestBody MeetingRequest request) {
+        MeetingDTO updated = meetingService.updateMeeting(meetingId, request);
+        return ResponseEntity.ok(updated);
+    }
 
     @DeleteMapping("/{meetingId}")
     public ResponseEntity<Void> deleteMeeting(@PathVariable ObjectId meetingId) {
