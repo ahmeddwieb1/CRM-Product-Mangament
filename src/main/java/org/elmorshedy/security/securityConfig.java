@@ -66,7 +66,7 @@ public class securityConfig {
                         .requestMatchers(
                                 "/", "/index.html", "/auth", "/auth.html", "/dashboard",
                                 "/dashboard.html", "/settings", "/settings.html", "/leads",
-                                "/leads.html", "/meetings", "/meetings.html","/meetings.js",
+                                "/leads.html", "/meetings", "/meetings.html","/meetings.js","/lead.js",
                                 "/styles.css", "/auth.js", "/favicon.ico",
                                 "/static/**", "/assets/**")
                         .permitAll()
@@ -102,14 +102,6 @@ public class securityConfig {
     }
 
     private void local_signup(UserRepo userRepo, Role userRole, User admin) {
-//        admin.setAccountNonLocked(false);
-//        admin.setAccountNonExpired(true);
-//        admin.setCredentialsNonExpired(true);
-//        admin.setEnabled(true);
-//        admin.setCredentialsExpiredData(LocalDate.now().plusYears(1));
-//        admin.setAccountExpiryData(LocalDate.now().plusYears(1));
-//        admin.setTwofactorEnabled(false);
-//        admin.setSignUpMethod("email");
         admin.setRole(userRole);
         userRepo.save(admin);
     }

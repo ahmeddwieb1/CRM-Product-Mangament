@@ -11,13 +11,10 @@ import java.util.Optional;
 
 public interface LeadRepo extends MongoRepository<Lead, ObjectId> {
 
-    Optional<Lead> findByLeadName(String leadName);
-
     boolean existsByPhone(@Size(min = 10, max = 12)
                           @Pattern(regexp = "^[0-9]+$",
                                   message = "Phone number must contain only digits")
                           String phone);
-
-    List<Lead> findByAssignedTo_Id(ObjectId assignedToId);
+Optional<Lead> findByPhone(String phone);
 
 }

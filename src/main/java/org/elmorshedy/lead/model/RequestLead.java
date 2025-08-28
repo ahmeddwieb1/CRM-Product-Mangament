@@ -3,10 +3,14 @@ package org.elmorshedy.lead.model;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class CreateLead {
+public class RequestLead {
+
     @NotBlank(message = "Lead name is required")
     private String leadName;
+
     @NotBlank(message = "Phone is required")
     @Size(min = 10, max = 12)
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
@@ -23,5 +27,7 @@ public class CreateLead {
     private LeadStatus leadStatus;
 
     @NotNull(message = "Lead must be assigned to a user")
-    private String assignedTo;
+    private String assignedToId ;
+
+    private List<String> notes;
 }

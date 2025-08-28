@@ -32,7 +32,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public User findbyusername(String username) {
+    public User findByUsername(String username) {
         Optional<User> user = userRepo.findByUsername(username);
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }

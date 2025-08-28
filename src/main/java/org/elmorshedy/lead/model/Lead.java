@@ -1,6 +1,7 @@
 package org.elmorshedy.lead.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.ToString;
@@ -15,7 +16,6 @@ import java.util.List;
 
 @Data
 @Document
-@ToString(exclude = {"assignedTo"})
 public class Lead {
     @Id
     private ObjectId id;
@@ -26,14 +26,14 @@ public class Lead {
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
     private String phone;
 
-    @DBRef
-    private User assignedTo;
+    @JsonIgnore
+    private ObjectId assignedToId;
 
     private double budget;
 
     private LeadSource leadSource;
 
     private LeadStatus leadStatus;
-//    @DBRef(lazy = true)
-//    private List<Note> notes = new ArrayList<>();
+
+    private List<String> notes = new ArrayList<>();
 }

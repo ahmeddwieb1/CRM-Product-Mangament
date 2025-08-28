@@ -121,7 +121,7 @@ public class AuthController {
 
     @GetMapping("/user")
     public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetails userDetails) {
-        User user = userService.findbyusername(userDetails.getUsername());
+        User user = userService.findByUsername(userDetails.getUsername());
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).

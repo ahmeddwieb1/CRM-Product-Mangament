@@ -12,7 +12,7 @@ public interface UserService {
 
     User updateUserRole(ObjectId userid, AppRole rolename);
 
-    User findbyusername(String username);
+    User findByUsername(String username);
 
 //    UserDTO getUser(ObjectId userId);
 

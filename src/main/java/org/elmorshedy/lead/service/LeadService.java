@@ -2,24 +2,26 @@ package org.elmorshedy.lead.service;
 
 import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
-import org.elmorshedy.lead.model.CreateLead;
+import org.elmorshedy.lead.model.RequestLead;
 import org.elmorshedy.lead.model.LeadDTO;
-import org.elmorshedy.lead.model.UpdateLead;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface LeadService {
-    public Optional<LeadDTO> getLead(ObjectId id);
 
-    public List<LeadDTO> getAllLeads();
+    Optional<LeadDTO> getLead(ObjectId id);
 
-    Lead addLead(CreateLead leadRequest, String currentUsername);
+    List<LeadDTO> getAllLeads();
 
-    //لو user have lead
-    List<Lead> getLeadsByUserid(ObjectId id);
+    LeadDTO addLead(RequestLead leadRequest, String currentUsername);
 
-    Lead updateLead(ObjectId id, UpdateLead leadRequest, String currentUsername);
 
-    public void deleteLead(ObjectId id);
+    LeadDTO updateLead(ObjectId id, RequestLead leadRequest, String currentUsername);
+
+    void deleteLead(ObjectId id);
+
+    LeadDTO addNoteToLead(ObjectId meetingId, String noteContent);
+
+    LeadDTO deleteNoteFromLead(ObjectId id, String content);
 }

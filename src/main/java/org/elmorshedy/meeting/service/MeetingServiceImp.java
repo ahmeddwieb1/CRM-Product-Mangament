@@ -34,8 +34,7 @@ public class MeetingServiceImp implements MeetingService {
         this.userRepo = userRepo;
     }
 
-    @Override
-    public MeetingDTO addMeeting(MeetingRequest request) {
+    private Meeting createMeetingFromRequest(MeetingRequest request) {
         Meeting meeting = new Meeting();
         meeting.setTitle(request.getTitle());
         meeting.setDate(request.getDate());
@@ -44,6 +43,10 @@ public class MeetingServiceImp implements MeetingService {
         meeting.setType(request.getType());
         meeting.setStatus(request.getStatus());
         meeting.setLocation(request.getLocation());
+
+        if (request.getNotes() != null) {
+            meeting.setNotes(request.getNotes());
+        }
 
         if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
             throw new RuntimeException("Client not found with ID: " + request.getClientId());
@@ -55,15 +58,18 @@ public class MeetingServiceImp implements MeetingService {
         }
         meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
 
-        if (request.getNotes() != null) {
-            meeting.setNotes(request.getNotes());
-        }
+        return meeting;
+    }
+
+    @Override
+    public MeetingDTO addMeeting(MeetingRequest request) {
+        Meeting meeting = createMeetingFromRequest(request);
+
         validateMeeting(meeting);
 
         Meeting saved = meetingRepo.save(meeting);
         return meetingMapper.toDTO(saved);
     }
-
 
 
     @Override
@@ -72,6 +78,7 @@ public class MeetingServiceImp implements MeetingService {
                 .map(meetingMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
     public MeetingDTO getMeetingById(ObjectId id) {
         Meeting meeting = meetingRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
@@ -126,7 +133,7 @@ public class MeetingServiceImp implements MeetingService {
     }
 
     @Transactional
-    public MeetingDTO addNoteToMeeting(ObjectId meetingId, String noteContent) {
+    public MeetingDTO  addNoteToMeeting(ObjectId meetingId, String noteContent) {
         Meeting meeting = meetingRepo.findById(meetingId)
                 .orElseThrow(() -> new RuntimeException("Meeting not found"));
 
@@ -181,15 +188,15 @@ public class MeetingServiceImp implements MeetingService {
         }
     }
 
-    public MeetingDTO deleteNoteFromMeeting(ObjectId id ,String content){
+    public MeetingDTO deleteNoteFromMeeting(ObjectId id, String content) {
         Meeting meeting = meetingRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
-        if (meeting.getNotes()==null||meeting.getNotes().isEmpty()) {
+        if (meeting.getNotes() == null || meeting.getNotes().isEmpty()) {
             throw new RuntimeException("Meeting has no notes to delete");
         }
-        boolean remove =meeting.getNotes().removeIf(note -> note.equals(content));
+        boolean remove = meeting.getNotes().removeIf(note -> note.equals(content));
 
-        if (!remove){
+        if (!remove) {
             throw new RuntimeException("Note not found in meeting");
         }
         Meeting updated = meetingRepo.save(meeting);
