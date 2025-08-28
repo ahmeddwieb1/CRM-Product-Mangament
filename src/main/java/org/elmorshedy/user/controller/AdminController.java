@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 import org.elmorshedy.user.model.ChangeRoleRequest;
 import org.elmorshedy.user.model.Role;
 import org.elmorshedy.user.model.User;
+import org.elmorshedy.user.model.UserDTO;
 import org.elmorshedy.user.repo.RoleRepo;
 import org.elmorshedy.user.service.UserServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class AdminController {
     private UserServiceImp userService;
 
     @GetMapping
-    public List<User> findAll() {
+    public List<UserDTO> findAll() {
         return userService.findAlluser();
     }
 

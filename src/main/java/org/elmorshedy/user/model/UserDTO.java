@@ -12,15 +12,10 @@ public class UserDTO {
     private String username;
     private String email;
     private RoleDTO role;
-//    private boolean enabled;
-//    private boolean accountNonExpired;
-//    private boolean accountNonLocked;
-//    private boolean credentialsNonExpired;
-//    private LocalDate credentialsExpired;
-//    private LocalDate accountExpiredDate;
-//    private String twoFactorSecret;
-//    private boolean isTwoFactorSecret;
-//    private String signUpMethod;
-//    private LocalDateTime createdAt;
-//    private LocalDateTime updatedAt;
+
+    public UserDTO(String id, String username, String email) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+    }
 }

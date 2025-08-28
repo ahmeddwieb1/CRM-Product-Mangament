@@ -1,22 +1,21 @@
 const token = localStorage.getItem('token');
 
-// ✅ check JWT
 function isJwt(t) {
     return typeof t === 'string' && t.split('.').length === 3;
 }
+
 if (!isJwt(token)) {
     localStorage.clear();
     window.location.href = '/auth.html';
 }
-const authHeaders = { Authorization: 'Bearer ' + token };
+const authHeaders = {Authorization: 'Bearer ' + token};
 
 function authFetch(url, options = {}) {
     const base = options.headers || {};
     const headers = Object.assign({}, base, authHeaders);
-    return fetch(url, { ...options, headers });
+    return fetch(url, {...options, headers});
 }
 
-// ✅ error reader helper
 async function readError(res) {
     try {
         const j = await res.json();
@@ -30,8 +29,7 @@ async function readError(res) {
     }
 }
 
-// ✅ current user
-const me = { id: null, username: localStorage.getItem('username') || 'User' };
+const me = {id: null, username: localStorage.getItem('username') || 'User'};
 document.getElementById('welcome').textContent = 'Welcome, ' + me.username;
 document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear();
@@ -41,28 +39,29 @@ document.getElementById('logout').addEventListener('click', () => {
 const listEl = document.getElementById('list');
 const detailsEl = document.getElementById('details');
 
-// ✅ details view
-function renderDetails(m) {
-    if (!m) {
+function renderDetails(meeting) {
+    if (!meeting) {
         detailsEl.innerHTML = '<span class="muted">Select a meeting to view details</span>';
         return;
     }
     detailsEl.innerHTML = `
       <h3>
-          ${m.title || 'Untitled'}
-          <button onclick="deleteMeeting('${m.id}')" style="margin-left:10px;color:red;">Delete</button>
+          ${meeting.title || 'Untitled'}
+          <button onclick="deleteMeeting('${meeting.id}')" style="margin-left:10px;color:red;">Delete</button>
       </h3>
       <div class="kv">
-          <div>Date</div><div>${m.date || ''}</div>
-          <div>Duration</div><div>${m.duration || ''} hours</div>
-          <div>Location</div><div>${m.location || ''}</div>
-          <div>Status</div><div>${m.status || ''}</div>
-          <div>Client Name</div><div>${m.clientName  || ''}</div>
+          <div>Date</div><div>${meeting.date || ''}</div>
+          <div>Time</div><div>${meeting.time || ''}</div>
+          <div>Duration</div><div>${meeting.duration || ''} hours</div>
+          <div>Type</div><div>${meeting.type || ''} </div>
+          <div>Location</div><div>${meeting.location || ''}</div>
+          <div>Status</div><div>${meeting.status || ''}</div>
+          <div>Client Name</div><div>${meeting.clientName || ''}</div>
           <div>Notes</div><div>
               ${
-        Array.isArray(m.notes)
-            ? m.notes.map((n) => `<div>${n}</div>`).join('')
-            : m.notes || '<span class="muted">No notes</span>'
+        Array.isArray(meeting.notes)
+            ? meeting.notes.map((n) => `<div>${n}</div>`).join('')
+            : meeting.notes || '<span class="muted">No notes</span>'
     }
           </div>
       </div>
@@ -76,24 +75,23 @@ function renderList(meetings) {
         return;
     }
     listEl.innerHTML = '';
-    meetings.forEach((m, idx) => {
+    meetings.forEach((meeting, idx) => {
         const item = document.createElement('div');
         item.className = 'item' + (idx === 0 ? ' active' : '');
-        item.textContent = `${m.title || 'Meeting'} (${m.status || ''})`;
+        item.textContent = `${meeting.title || 'Meeting'} (${meeting.status || ''})`;
         item.addEventListener('click', () => {
             document.querySelectorAll('.item').forEach((el) => el.classList.remove('active'));
             item.classList.add('active');
-            renderDetails(m);
+            renderDetails(meeting);
         });
         listEl.appendChild(item);
     });
     renderDetails(meetings[0]);
 }
 
-// ✅ delete meeting
 async function deleteMeeting(id) {
     if (!confirm('Are you sure you want to delete this meeting?')) return;
-    const res = await authFetch(`/api/meetings/${id}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/meetings/${id}`, {method: 'DELETE'});
     if (res.ok) {
         alert('Meeting deleted successfully');
         window.location.reload();
@@ -103,7 +101,6 @@ async function deleteMeeting(id) {
     }
 }
 
-// ✅ load current user
 async function loadMe() {
     const info = await authFetch('/api/auth/user').then((r) => r.json()).catch(() => null);
     if (info && info.id) {
@@ -114,7 +111,6 @@ async function loadMe() {
     await loadUsers(); // بعد ما نجيب me نجيب users
 }
 
-// ✅ helper: حط اختيار المستخدم الحالي في الـ dropdown (fallback)
 function setCurrentUserAsDefault(select) {
     select.innerHTML = '';
     const opt = document.createElement('option');
@@ -124,29 +120,31 @@ function setCurrentUserAsDefault(select) {
     if (me.id) select.value = me.id;
 }
 
-// ✅ load all users for dropdown (مع fallback لو فشل)
 async function loadUsers() {
     const select = document.getElementById('mf-assignedTo');
     try {
+        //todo
         const res = await authFetch('/api/admin'); // مؤقتاً
         if (res.ok) {
             const users = await res.json();
             select.innerHTML = '';
-            users.forEach((u) => {
+            users.forEach((user) => {
                 const opt = document.createElement('option');
-                opt.value = u.id; // لازم يكون String الـ ObjectId
-                opt.textContent = u.username;
+                opt.value = user.id;
+                opt.textContent = user.username;
+                console.log('user object:', user);
+                console.log('user ID:', user.id);
+                console.log('user name:', user.username);
                 select.appendChild(opt);
             });
-            // الافتراضي
             if (me.id && users.some((u) => u.id === me.id)) {
                 select.value = me.id;
             }
-            // لو مش موجود ضمن اللستة لأي سبب
             if (!select.value && me.id) {
                 const opt = document.createElement('option');
                 opt.value = me.id;
                 opt.textContent = me.username;
+
                 select.appendChild(opt);
                 select.value = me.id;
             }
@@ -182,12 +180,15 @@ async function loadLeads() {
         const res = await authFetch('/api/lead');
         if (res.ok) {
             const leads = await res.json();
+            console.log('Leads response:', leads);
             const select = document.getElementById('mf-clientId');
-            select.innerHTML = '<option value="">-- Select Client --</option>'; // اعادة القيمة الافتراضية
-            leads.forEach(l => {
+            select.innerHTML = '<option value="">-- Select Client --</option>';
+            leads.forEach(lead => {
+                // console.log('Single lead:', lead);
                 const opt = document.createElement('option');
-                opt.value = l.id;       // ObjectId أو id
-                opt.textContent = l.name; // الاسم للمستخدم
+                opt.value = lead.id;
+                opt.textContent = lead.leadName;
+
                 select.appendChild(opt);
             });
         } else {
@@ -208,19 +209,20 @@ async function createMeeting(e) {
     const msg = document.getElementById('mf-msg');
 
     const title = (document.getElementById('mf-title')?.value || '').trim();
-    const clientName = (document.getElementById('mf-clientName')?.value || '').trim();
+    const clientName = (document.getElementById('mf-clientId')?.value || '').trim();
     const assignedToSelect = document.getElementById('mf-assignedTo');
-    const assignedToId = (assignedToSelect?.value || me.id || '').trim();
+    let assignedToId = assignedToSelect?.value || '';
+    // const assignedToId = (assignedToSelect?.value || me.id || '').trim();
+
     const date = document.getElementById('mf-date')?.value || null;
-    const time = document.getElementById('mf-time')?.value || null;
+    const timeInput = document.getElementById('mf-time');
+    const time = timeInput?.value || null;
     const durationRaw = document.getElementById('mf-duration')?.value || '';
     const type = document.getElementById('mf-type')?.value || null;
     const status = document.getElementById('mf-status')?.value || null;
     const location = document.getElementById('mf-location')?.value || null;
     const noteMessage = document.getElementById('mf-notes')?.value || null;
-    // console.log("Sending request:", body);
 
-    // ✅ checks بسيطة علشان أخطاء الـ backend تقل
     if (!title) {
         msg.textContent = 'Title is required';
         return;
@@ -229,6 +231,9 @@ async function createMeeting(e) {
         msg.textContent = 'Client name is required';
         return;
     }
+    if (!assignedToId && me && me.id) {
+        assignedToId = me.id.toString();
+    }
     if (!assignedToId) {
         msg.textContent = 'Assigned user is required';
         return;
@@ -236,20 +241,21 @@ async function createMeeting(e) {
 
     const body = {
         title: document.getElementById("mf-title").value,
-        clientId: document.getElementById("mf-clientName").value,     // 👈 ID مش الاسم
-        assignedToId: document.getElementById("mf-assignedTo").value, // 👈 ID مش object
+        clientId: document.getElementById("mf-clientId").value,
+        assignedToId: document.getElementById("mf-assignedTo").value,
         date: document.getElementById("mf-date").value,
-        time: document.getElementById("mf-time").value,
+        time: time,
+        // time: document.getElementById("mf-time").value,
         duration: durationRaw ? parseInt(durationRaw, 10) : null,
         type: type || null,
         status: status || null,
         location: location || null,
-        noteMessage: noteMessage || null
+        notes: noteMessage ? [noteMessage] : null
     };
-
-    console.log("Sending request:", body);
+    console.log('Selected client ID:', document.getElementById("mf-clientId").value);
+    console.log('Selected user ID:', document.getElementById("mf-assignedTo").value);
     console.log('POST /api/meetings body =>', body);
-
+    console.log('Time value:', time);
     btn.disabled = true;
     btn.textContent = 'Creating...';
     msg.textContent = '';
@@ -257,21 +263,22 @@ async function createMeeting(e) {
     try {
         const res = await authFetch('/api/meetings', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body)
         });
 
         if (res.ok) {
             msg.textContent = 'Meeting created';
             document.getElementById('meeting-form').reset();
-            // رجّع الافتراضي للمستخدم الحالي
             if (me.id) document.getElementById('mf-assignedTo').value = me.id;
             await loadMeetings();
         } else {
-            const err = await readError(res);
-            console.error('Failed to create meeting:', err);
-            msg.textContent = err || 'Failed to create meeting';
-            alert('Failed to create meeting: ' + err);
+            const errObj = await res.json();
+            const errMessage = errObj.message || 'Failed to create meeting';
+
+            console.error('Failed to create meeting:', errMessage);
+            msg.textContent = errMessage;
+            alert('Failed to create meeting: ' + errMessage);
         }
     } catch (e) {
         console.error('Error creating meeting', e);

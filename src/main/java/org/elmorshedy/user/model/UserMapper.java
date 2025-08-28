@@ -5,8 +5,8 @@ public class UserMapper {
     public static RoleDTO toRoleDTO(Role role) {
         if (role == null) return null;
         return new RoleDTO(
-                role.getId().toHexString(),  // ObjectId → String
-                role.getRolename().name()    // Enum → String
+                role.getId().toHexString(),
+                role.getRolename().name()
         );
     }
 

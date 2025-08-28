@@ -1,24 +1,34 @@
 package org.elmorshedy.user.service;
 
 import org.bson.types.ObjectId;
-import org.elmorshedy.user.model.AppRole;
-import org.elmorshedy.user.model.Role;
-import org.elmorshedy.user.model.User;
+import org.elmorshedy.user.model.*;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImp implements UserService {
-    @Autowired
-    private UserRepo userRepo;
 
+    private final UserRepo userRepo;
+
+    @Autowired
+    public UserServiceImp(UserRepo userRepo) {
+        this.userRepo = userRepo;
+    }
+//todo make role return
     @Override
-    public List<User> findAlluser() {
-        return userRepo.findAll();
+    public List<UserDTO> findAlluser() {
+        return userRepo.findAll().stream().map(
+                user -> new UserDTO(
+                        user.getId().toHexString(),
+                        user.getUsername(),
+                        user.getEmail()
+//                        , user.getRole()
+                )).collect(Collectors.toList());
     }
 
     @Override
@@ -26,6 +36,7 @@ public class UserServiceImp implements UserService {
         Optional<User> user = userRepo.findByUsername(username);
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
+
     public User findById(ObjectId id) {
         Optional<User> user = userRepo.findById(id);
         return user.orElseThrow(() -> new RuntimeException("User not found"));
@@ -37,9 +48,9 @@ public class UserServiceImp implements UserService {
     public User updateUserRole(ObjectId userId, AppRole rolename) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Role role =new Role(rolename);
-        if (role.getRolename()==AppRole.ROLE_ADMIN) {
-            throw  new IllegalArgumentException("You cannot assign admin role.");
+        Role role = new Role(rolename);
+        if (role.getRolename() == AppRole.ROLE_ADMIN) {
+            throw new IllegalArgumentException("You cannot assign admin role.");
         }
         user.setRole(role);
         return userRepo.save(user);
