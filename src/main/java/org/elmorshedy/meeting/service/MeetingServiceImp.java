@@ -10,7 +10,7 @@ import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,11 +64,17 @@ public class MeetingServiceImp implements MeetingService {
     }
 
 
+
     @Override
     public List<MeetingDTO> getAllMeetings() {
         return meetingRepo.findAll().stream()
                 .map(meetingMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+    public MeetingDTO getMeetingById(ObjectId id) {
+        Meeting meeting = meetingRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
+        return meetingMapper.toDTO(meeting);
     }
 
     @Override
@@ -86,8 +92,10 @@ public class MeetingServiceImp implements MeetingService {
         if (meeting.getDuration() < 0) {
             throw new IllegalArgumentException("Duration cannot be negative");
         }
-        if (meeting.getDate().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Meeting date cannot be in the past");
+        LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getDate(), meeting.getTime());
+
+        if (meetingDateTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Meeting date/time cannot be in the past");
         }
     }
 
@@ -103,15 +111,18 @@ public class MeetingServiceImp implements MeetingService {
         // 1. جيب الـ Meeting الحالية
         Meeting updatemeeting = meetingRepo.findById(meetingId)
                 .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + meetingId));
+        System.out.println("Incoming Request: " + request);
+        System.out.println("updatemeeting: " + updatemeeting);
 
         // 2. apply التحديثات
         applyUpdatesToMeeting(request, updatemeeting);
-
+        System.out.println("updatemeeting: " + updatemeeting);
         // 3. validate البيانات بعد التحديث
         validateMeeting(updatemeeting);
 
         Meeting saved = meetingRepo.save(updatemeeting);
-        return meetingMapper.toDTO(saved);    }
+        return meetingMapper.toDTO(saved);
+    }
 
     private void applyUpdatesToMeeting(MeetingRequest request, Meeting meeting) {
         if (request.getTitle() != null) {

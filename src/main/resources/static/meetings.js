@@ -48,6 +48,7 @@ function renderDetails(meeting) {
       <h3>
           ${meeting.title || 'Untitled'}
           <button onclick="deleteMeeting('${meeting.id}')" style="margin-left:10px;color:red;">Delete</button>
+          <button onclick="loadMeetingForEdit('${m.id}')" style="margin-left:10px;color:blue;">Edit</button>
       </h3>
       <div class="kv">
           <div>Date</div><div>${meeting.date || ''}</div>
@@ -290,6 +291,161 @@ async function createMeeting(e) {
     }
 }
 
+
+// Edit Modal Functions
+function openEditModal() {
+    document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+async function loadMeetingForEdit(meetingId) {
+    try {
+        const res = await authFetch(`/api/meetings/${meetingId}`);
+        if (res.ok) {
+            const meeting = await res.json();
+
+            // Fill the edit form
+            document.getElementById('edit-id').value = meeting.id;
+            document.getElementById('edit-title').value = meeting.title || '';
+            document.getElementById('edit-date').value = meeting.date || '';
+            document.getElementById('edit-time').value = meeting.time || '';
+            document.getElementById('edit-duration').value = meeting.duration || '';
+            document.getElementById('edit-type').value = meeting.type || '';
+            document.getElementById('edit-status').value = meeting.status || '';
+            document.getElementById('edit-location').value = meeting.location || '';
+            document.getElementById('edit-notes').value = Array.isArray(meeting.notes) ? meeting.notes.join('\n') : '';
+
+            // Load clients and users for dropdowns
+            await loadClientsForEdit();
+            await loadUsersForEdit();
+
+            // Set selected values
+            document.getElementById('edit-clientId').value = meeting.clientId || '';
+            document.getElementById('edit-assignedTo').value = meeting.assignedToId || '';
+
+            openEditModal();
+        }
+    } catch (e) {
+        console.error('Error loading meeting for edit:', e);
+        alert('Failed to load meeting details');
+    }
+}
+
+// Load clients for edit dropdown
+async function loadClientsForEdit() {
+    const select = document.getElementById('edit-clientId');
+    try {
+        const res = await authFetch('/api/lead');
+        if (res.ok) {
+            const leads = await res.json();
+            select.innerHTML = '<option value="">-- Select Client --</option>';
+            leads.forEach(lead => {
+                const opt = document.createElement('option');
+                opt.value = lead.id;
+                opt.textContent = lead.leadName;
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error('Error loading clients for edit:', e);
+    }
+}
+
+// Load users for edit dropdown
+async function loadUsersForEdit() {
+    const select = document.getElementById('edit-assignedTo');
+    try {
+        const res = await authFetch('/api/admin'); // Adjust API endpoint
+        if (res.ok) {
+            const users = await res.json();
+            select.innerHTML = '<option value="">-- Select User --</option>';
+            users.forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user.id;
+                opt.textContent = user.username;
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.error('Error loading users for edit:', e);
+    }
+}
+
+// Handle edit form submission
+document.getElementById('edit-meeting-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const meetingId = document.getElementById('edit-id').value;
+    const btn = this.querySelector('button[type="submit"]');
+
+    const body = {
+        title: document.getElementById('edit-title').value,
+        clientId: document.getElementById('edit-clientId').value,
+        assignedToId: document.getElementById('edit-assignedTo').value,
+        date: document.getElementById('edit-date').value,
+        time: document.getElementById('edit-time').value,
+        duration: parseInt(document.getElementById('edit-duration').value),
+        type: document.getElementById('edit-type').value,
+        status: document.getElementById('edit-status').value,
+        location: document.getElementById('edit-location').value,
+        notes: document.getElementById('edit-notes').value ?
+            document.getElementById('edit-notes').value.split('\n') : []
+    };
+    console.log("Request Body:", body);
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+
+    try {
+        const res = await authFetch(`/api/meetings/${meetingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            alert('Meeting updated successfully');
+            closeEditModal();
+            await loadMeetings(); // Refresh the list
+        } else {
+            const error = await readError(res);
+            alert('Failed to update meeting: ' + error);
+        }
+    } catch (e) {
+        console.error('Error updating meeting:', e);
+        alert('Unexpected error occurred');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update Meeting';
+    }
+});
+
+// Update renderDetails to include edit button
+function renderDetails(m) {
+    if (!m) {
+        detailsEl.innerHTML = '<span class="muted">Select a meeting to view details</span>';
+        return;
+    }
+    detailsEl.innerHTML = `
+      <h3>
+          ${m.title || 'Untitled'}
+          <button onclick="deleteMeeting('${m.id}')" style="margin-left:10px;color:red;">Delete</button>
+          <button onclick="loadMeetingForEdit('${m.id}')" style="margin-left:10px;color:blue;">Edit</button>
+      </h3>
+      <div class="kv">
+          <div>Date</div><div>${m.date || ''}</div>
+          <div>Time</div><div>${m.time || ''}</div>
+          <div>Duration</div><div>${m.duration || ''} hours</div>
+          <div>Location</div><div>${m.location || ''}</div>
+          <div>Status</div><div>${m.status || ''}</div>
+          <div>Client Name</div><div>${m.clientName || ''}</div>
+          <div>Notes</div><div>
+              ${Array.isArray(m.notes) ? m.notes.map((n) => `<div>${n}</div>`).join('') : m.notes || '<span class="muted">No notes</span>'}
+          </div>
+      </div>
+  `;
+}
 // ✅ init
 loadMe().then(loadMeetings);
 document.addEventListener("DOMContentLoaded", async () => {

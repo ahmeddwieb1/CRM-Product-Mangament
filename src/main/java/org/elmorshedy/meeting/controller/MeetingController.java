@@ -1,5 +1,6 @@
 package org.elmorshedy.meeting.controller;
 
+import jakarta.validation.Valid;
 import org.bson.types.ObjectId;
 import org.elmorshedy.meeting.model.Meeting;
 import org.elmorshedy.meeting.model.MeetingDTO;
@@ -25,17 +26,16 @@ public class MeetingController {
         this.meetingService = meetingService;
     }
 
-//    @PostMapping
-//    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody MeetingRequest request) {
-//        MeetingDTO created = meetingService.addMeeting(request);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-//    }
     @PostMapping
-    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody MeetingRequest request) {
+    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody @Valid MeetingRequest request) {
         MeetingDTO created = meetingService.addMeeting(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<MeetingDTO> getmeetingbyid(@PathVariable ObjectId id){
+        return ResponseEntity.ok(meetingService.getMeetingById(id));
+    }
     @GetMapping
     public ResponseEntity<List<MeetingDTO>> getAllMeetings() {
         return ResponseEntity.ok(meetingService.getAllMeetings());
@@ -56,15 +56,5 @@ public class MeetingController {
     public ResponseEntity<Void> deleteMeeting(@PathVariable ObjectId meetingId) {
         meetingService.deleteMeeting(meetingId);
         return ResponseEntity.noContent().build();
-    }
-
-    @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
-    @ExceptionHandler({NoSuchElementException.class})
-    public ResponseEntity<String> handleNotFound(NoSuchElementException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

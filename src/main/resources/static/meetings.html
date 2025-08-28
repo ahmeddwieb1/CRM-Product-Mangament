@@ -104,6 +104,63 @@
         a.nav {
             margin-right: 12px
         }
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -10px;
+            margin-right: -10px;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        #edit-meeting-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #edit-meeting-form input,
+        #edit-meeting-form select,
+        #edit-meeting-form textarea {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        #edit-meeting-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
     </style>
 </head>
 <body>
@@ -173,6 +230,40 @@
                     <div id="mf-msg" class="muted" style="margin-top:6px"></div>
                 </form>
             </section>
+            <div id="editModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeEditModal()">&times;</span>
+                    <h2>Edit Meeting</h2>
+                    <form id="edit-meeting-form">
+                        <input type="hidden" id="edit-id">
+                        <input id="edit-title" placeholder="Title" required>
+                        <select id="edit-clientId" required></select>
+                        <select id="edit-assignedTo" required></select>
+                        <input type="date" id="edit-date" required>
+                        <input type="time" id="edit-time" required>
+                        <input type="number" id="edit-duration" placeholder="Duration (hours)" min="1" max="8" required>
+                        <select id="edit-type" required>
+                            <option value="">-- Type --</option>
+                            <option value="PROPOSAL">Proposal</option>
+                            <option value="SITEVISIT">Follow Up</option>
+                            <option value="NEGOTIAION">Consultation</option>
+                        </select>
+                        <select id="edit-status" required>
+                            <option value="">-- Status --</option>
+                            <option value="SCEDULED">Scheduled</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Canceled</option>
+                        </select>
+                        <select id="edit-location" required>
+                            <option value="">-- Location --</option>
+                            <option value="ONLINE">Online</option>
+                            <option value="OFFLINE">Offline</option>
+                        </select>
+                        <textarea id="edit-notes" placeholder="Notes"></textarea>
+                        <button type="submit" class="btn">Update Meeting</button>
+                    </form>
+                </div>
+            </div>
             <section>
                 <h3>Details</h3>
                 <div id="details" class="muted">Select a meeting to view details</div>
