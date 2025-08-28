@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,6 +125,21 @@ public class MeetingServiceImp implements MeetingService {
         return meetingMapper.toDTO(saved);
     }
 
+    @Transactional
+    public MeetingDTO addNoteToMeeting(ObjectId meetingId, String noteContent) {
+        Meeting meeting = meetingRepo.findById(meetingId)
+                .orElseThrow(() -> new RuntimeException("Meeting not found"));
+
+        if (meeting.getNotes() == null) {
+            meeting.setNotes(new ArrayList<>());
+        }
+
+        meeting.getNotes().add(noteContent);
+        Meeting updated = meetingRepo.save(meeting);
+
+        return meetingMapper.toDTO(updated);
+    }
+
     private void applyUpdatesToMeeting(MeetingRequest request, Meeting meeting) {
         if (request.getTitle() != null) {
             meeting.setTitle(request.getTitle());
@@ -163,5 +179,20 @@ public class MeetingServiceImp implements MeetingService {
             }
             meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
         }
+    }
+
+    public MeetingDTO deleteNoteFromMeeting(ObjectId id ,String content){
+        Meeting meeting = meetingRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
+        if (meeting.getNotes()==null||meeting.getNotes().isEmpty()) {
+            throw new RuntimeException("Meeting has no notes to delete");
+        }
+        boolean remove =meeting.getNotes().removeIf(note -> note.equals(content));
+
+        if (!remove){
+            throw new RuntimeException("Note not found in meeting");
+        }
+        Meeting updated = meetingRepo.save(meeting);
+        return meetingMapper.toDTO(updated);
     }
 }

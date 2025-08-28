@@ -44,11 +44,12 @@ function renderDetails(meeting) {
         detailsEl.innerHTML = '<span class="muted">Select a meeting to view details</span>';
         return;
     }
+
     detailsEl.innerHTML = `
       <h3>
           ${meeting.title || 'Untitled'}
           <button onclick="deleteMeeting('${meeting.id}')" style="margin-left:10px;color:red;">Delete</button>
-          <button onclick="loadMeetingForEdit('${m.id}')" style="margin-left:10px;color:blue;">Edit</button>
+          <button onclick="loadMeetingForEdit('${meeting.id}')" style="margin-left:10px;color:blue;">Edit</button>
       </h3>
       <div class="kv">
           <div>Date</div><div>${meeting.date || ''}</div>
@@ -58,12 +59,23 @@ function renderDetails(meeting) {
           <div>Location</div><div>${meeting.location || ''}</div>
           <div>Status</div><div>${meeting.status || ''}</div>
           <div>Client Name</div><div>${meeting.clientName || ''}</div>
-          <div>Notes</div><div>
-              ${
-        Array.isArray(meeting.notes)
-            ? meeting.notes.map((n) => `<div>${n}</div>`).join('')
-            : meeting.notes || '<span class="muted">No notes</span>'
-    }
+          
+          <div>Notes</div>
+          <div>
+              ${Array.isArray(meeting.notes) ? meeting.notes.map((note) => `
+                  <div>${note} 
+                      <button onclick="deleteNote('${meeting.id}', '${note}')" style="color:red; margin-left:10px; border:none; background:none; cursor:pointer;">×</button>
+                  </div>
+              `).join('') : '<span class="muted">No notes</span>'}
+              
+              <div style="margin-top: 10px;">
+                  <input type="text" id="new-note-${meeting.id}" placeholder="Add new note" 
+                         style="padding:4px; border:1px solid #cbd5e1; border-radius:4px;">
+                  <button onclick="addNote('${meeting.id}')" 
+                          style="margin-left:5px; padding:4px 8px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">
+                      Add Note
+                  </button>
+              </div>
           </div>
       </div>
   `;
@@ -300,6 +312,7 @@ function openEditModal() {
 function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
+
 async function loadMeetingForEdit(meetingId) {
     try {
         const res = await authFetch(`/api/meetings/${meetingId}`);
@@ -374,7 +387,8 @@ async function loadUsersForEdit() {
 }
 
 // Handle edit form submission
-document.getElementById('edit-meeting-form').addEventListener('submit', async function(e) {
+document.getElementById('edit-meeting-form')
+    .addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const meetingId = document.getElementById('edit-id').value;
@@ -421,30 +435,55 @@ document.getElementById('edit-meeting-form').addEventListener('submit', async fu
     }
 });
 
-// Update renderDetails to include edit button
-function renderDetails(m) {
-    if (!m) {
-        detailsEl.innerHTML = '<span class="muted">Select a meeting to view details</span>';
+async function addNote(meetingId) {
+    const noteInput = document.getElementById(`new-note-${meetingId}`);
+    const noteContent = noteInput.value.trim();
+
+    if (!noteContent) {
+        alert('Please enter a note');
         return;
     }
-    detailsEl.innerHTML = `
-      <h3>
-          ${m.title || 'Untitled'}
-          <button onclick="deleteMeeting('${m.id}')" style="margin-left:10px;color:red;">Delete</button>
-          <button onclick="loadMeetingForEdit('${m.id}')" style="margin-left:10px;color:blue;">Edit</button>
-      </h3>
-      <div class="kv">
-          <div>Date</div><div>${m.date || ''}</div>
-          <div>Time</div><div>${m.time || ''}</div>
-          <div>Duration</div><div>${m.duration || ''} hours</div>
-          <div>Location</div><div>${m.location || ''}</div>
-          <div>Status</div><div>${m.status || ''}</div>
-          <div>Client Name</div><div>${m.clientName || ''}</div>
-          <div>Notes</div><div>
-              ${Array.isArray(m.notes) ? m.notes.map((n) => `<div>${n}</div>`).join('') : m.notes || '<span class="muted">No notes</span>'}
-          </div>
-      </div>
-  `;
+
+    try {
+        const res = await authFetch(`/api/meetings/${meetingId}/notes`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: noteContent })
+        });
+
+        if (res.ok) {
+            noteInput.value = ''; // clear input
+            await loadMeetings(); // refresh list
+        } else {
+            const error = await readError(res);
+            alert('Failed to add note: ' + error);
+        }
+    } catch (e) {
+        console.error('Error adding note:', e);
+        alert('Unexpected error occurred');
+    }
+}
+
+async function deleteNote(meetingId, noteContent) {
+    if (!confirm('Are you sure you want to delete this note?')) return;
+
+    try {
+        const res = await authFetch(`/api/meetings/${meetingId}/notes`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: noteContent })
+        });
+
+        if (res.ok) {
+            await loadMeetings(); // refresh the list
+        } else {
+            const error = await readError(res);
+            alert('Failed to delete note: ' + error);
+        }
+    } catch (e) {
+        console.error('Error deleting note:', e);
+        alert('Unexpected error occurred');
+    }
 }
 // ✅ init
 loadMe().then(loadMeetings);
