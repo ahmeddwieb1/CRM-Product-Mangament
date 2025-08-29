@@ -1,276 +1,648 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyApp • Meetings</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #1e2a38;
+            --gray: #64748b;
+            --light-gray: #f1f5f9;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 12px rgba(2, 6, 23, 0.08);
+            --header-shadow: 0 2px 8px rgba(2, 6, 23, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            font-family: Inter, system-ui, Arial, sans-serif;
-            background: #f7f9fc;
-            color: #0f172a
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--light-gray);
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 40px;
         }
 
         .top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 22px;
-            background: #fff;
-            box-shadow: 0 1px 0 rgba(2, 6, 23, .06)
+            padding: 16px 24px;
+            background: #ffffff;
+            box-shadow: var(--header-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .brand {
-            font-weight: 800
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand i {
+            font-size: 1.8rem;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .btn {
             appearance: none;
             border: 0;
-            background: #ef4444;
+            background: var(--danger);
             color: #fff;
-            padding: 10px 14px;
+            padding: 10px 16px;
             border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #e10f5a;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
         }
 
         .wrap {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 30px auto;
-            padding: 0 20px
+            padding: 0 20px;
         }
 
         .card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(2, 6, 23, .06);
-            padding: 22px
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .muted {
-            color: #64748b
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns:360px 1fr;
-            gap: 16px
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
         }
 
         .list {
-            border-right: 1px solid rgba(2, 6, 23, .08);
-            padding-right: 12px;
+            border-right: 1px solid var(--border);
+            padding-right: 16px;
             max-height: 60vh;
-            overflow: auto
+            overflow: auto;
         }
 
         .item {
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
-            cursor: pointer
+            cursor: pointer;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
         }
 
         .item:hover {
-            background: #f1f5f9
+            background: var(--light);
+            border-color: var(--primary);
         }
 
         .item.active {
-            background: #e2e8f0
+            background: var(--light);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .item-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(76, 201, 240, 0.15);
+            color: #4cc9f0;
+        }
+
+        .badge-warning {
+            background: rgba(248, 150, 30, 0.15);
+            color: #f8961e;
+        }
+
+        .badge-danger {
+            background: rgba(247, 37, 133, 0.15);
+            color: #f72585;
+        }
+
+        .badge-info {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--primary);
         }
 
         .kv {
             display: grid;
-            grid-template-columns:180px 1fr;
-            gap: 8px
+            grid-template-columns: 120px 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .kv strong {
+            color: var(--dark);
         }
 
         .row {
             display: grid;
-            grid-template-columns:1fr 1fr;
-            gap: 8px
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        input, select {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px
+        input, select, textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.3s ease;
         }
 
-        a.nav {
-            margin-right: 12px
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
         .modal {
+            display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal-content {
-            background-color: #fff;
-            padding: 30px;
+            background: white;
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
-            width: 90%;
+            padding: 24px;
+            width: 100%;
             max-width: 500px;
-            max-height: 80vh;
-            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: -10px;
-            margin-right: -10px;
-        }
-
-        .close:hover {
-            color: black;
-        }
-
-        #edit-meeting-form {
+        .modal-header {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        #edit-meeting-form input,
-        #edit-meeting-form select,
-        #edit-meeting-form textarea {
-            padding: 10px;
-            border: 1px solid #cbd5e1;
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(67, 97, 238, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            background: var(--light);
             border-radius: 8px;
-            font-family: inherit;
+            color: var(--dark);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        #edit-meeting-form textarea {
-            min-height: 80px;
-            resize: vertical;
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .note-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .note-item:last-child {
+            border-bottom: none;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .note-delete {
+            color: var(--danger);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .add-note-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .add-note-input {
+            flex: 1;
+        }
+
+        @media (max-width: 968px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .list {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-right: 0;
+                padding-bottom: 16px;
+                max-height: 40vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 <header class="top">
-    <div class="brand">MyApp</div>
-    <div>
-        <a class="nav" href="/dashboard.html">Dashboard</a>
-        <a class="nav" href="/meetings.html">meetings</a>
-        <a class="nav" href="/leads.html">Leads</a>
-        <a class="nav" href="/settings.html">Settings</a>
+    <div class="brand">
+        <i class="fas fa-chart-line"></i>
+        <span>MyApp</span>
+    </div>
+    <div class="nav-container">
+        <a class="nav" href="/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="nav active" href="/meetings.html"><i class="fas fa-video"></i> Meetings</a>
+        <a class="nav" href="/leads.html"><i class="fas fa-users"></i> Leads</a>
+        <a class="nav" href="/settings.html"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+    <div class="user-info">
         <span id="welcome" class="muted"></span>
-        <button class="btn" id="logout">Logout</button>
+        <button class="btn" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
     </div>
 </header>
+
 <main class="wrap">
-    <div class="card" style="margin-bottom:16px">
-        <h2>Meetings</h2>
-        <p class="muted">Browse and add meetings</p>
+    <div class="card" style="margin-bottom: 20px;">
+        <h2>Meetings Management</h2>
+        <p class="muted">Browse and manage your meetings. Schedule new meetings and track their status.</p>
     </div>
+
     <div class="card">
         <div class="grid">
             <section>
                 <h3>All Meetings</h3>
-                <div id="list" class="list"></div>
-                <hr style="margin:12px 0;border:0;border-top:1px solid rgba(2,6,23,.08)"/>
-                <h4>Add Meeting</h4>
+                <div id="list" class="list">
+                    <div class="item">
+                        <div class="loading"></div>
+                        <span>Loading meetings...</span>
+                    </div>
+                </div>
+
+                <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border);">
+
+                <h4>Schedule New Meeting</h4>
                 <form id="meeting-form">
                     <div class="row">
-                        <input id="mf-title" placeholder="Title" required/>
-                        <select id="mf-clientId" name="clientId" required>
-                            <option value="">-- Select Client --</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <input id="mf-date" type="date" required/>
-                        <input id="mf-time" type="time" required/>
-                    </div>
-                    <div class="row">
-                        <input id="mf-duration" type="number" placeholder="Duration (hours)" min="0" step="1"/>
-                        <select id="mf-type">
-                            <option value="">Type</option>
-                            <option>PROPOSAL</option>
-                            <option>SITEVISIT</option>
-                            <option>NEGOTIAION</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <select id="mf-status">
-                            <option value="">Status</option>
-                            <option>SCEDULED</option>
-                            <option>COMPLETED</option>
-                            <option>CANCELLED</option>
-                        </select>
-                        <select id="mf-location">
-                            <option value="">location</option>
-                            <option>ONLINE</option>
-                            <option>OFFLINE</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                            <select id="mf-assignedTo" required>
-                                <option value="">-- Select User --</option>
+                        <div>
+                            <input id="mf-title" placeholder="Meeting Title" required>
+                        </div>
+                        <div>
+                            <select id="mf-clientId" required>
+                                <option value="">-- Select Client --</option>
                             </select>
-                        <input id="mf-notes" placeholder="Note message"/>
+                        </div>
                     </div>
-                    <button class="btn" id="mf-btn" type="submit" style="margin-top:8px">Create Meeting</button>
-                    <div id="mf-msg" class="muted" style="margin-top:6px"></div>
+
+                    <div class="row">
+                        <div>
+                            <input id="mf-date" type="date" required>
+                        </div>
+                        <div>
+                            <input id="mf-time" type="time" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <input id="mf-duration" type="number" placeholder="Duration (hours)" min="0" step="1">
+                        </div>
+                        <div>
+                            <select id="mf-type">
+                                <option value="">-- Meeting Type --</option>
+                                <option>PROPOSAL</option>
+                                <option>SITEVISIT</option>
+                                <option>NEGOTIATION</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <select id="mf-status">
+                                <option value="">-- Status --</option>
+                                <option>SCHEDULED</option>
+                                <option>COMPLETED</option>
+                                <option>CANCELLED</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="mf-location">
+                                <option value="">-- Location --</option>
+                                <option>ONLINE</option>
+                                <option>OFFLINE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div>
+                            <select id="mf-assignedTo" required>
+                                <option value="">-- Assign To --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input id="mf-notes" placeholder="Initial note (optional)">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="mf-btn" type="submit">
+                            <i class="fas fa-plus"></i> Schedule Meeting
+                        </button>
+                    </div>
+
+                    <div id="mf-msg" class="muted" style="margin-top: 12px;"></div>
                 </form>
             </section>
-            <div id="editModal" class="modal" style="display:none;">
-                <div class="modal-content">
-                    <span class="close" onclick="closeEditModal()">&times;</span>
-                    <h2>Edit Meeting</h2>
-                    <form id="edit-meeting-form">
-                        <input type="hidden" id="edit-id">
-                        <input id="edit-title" placeholder="Title" required>
-                        <select id="edit-clientId" required></select>
-                        <select id="edit-assignedTo" required></select>
-                        <input type="date" id="edit-date" required>
-                        <input type="time" id="edit-time" required>
-                        <input type="number" id="edit-duration" placeholder="Duration (hours)" min="1" max="8" required>
-                        <select id="edit-type" required>
-                            <option value="">-- Type --</option>
-                            <option value="PROPOSAL">Proposal</option>
-                            <option value="SITEVISIT">Follow Up</option>
-                            <option value="NEGOTIAION">Consultation</option>
-                        </select>
-                        <select id="edit-status" required>
-                            <option value="">-- Status --</option>
-                            <option value="SCEDULED">Scheduled</option>
-                            <option value="COMPLETED">Completed</option>
-                            <option value="CANCELLED">Canceled</option>
-                        </select>
-                        <select id="edit-location" required>
-                            <option value="">-- Location --</option>
-                            <option value="ONLINE">Online</option>
-                            <option value="OFFLINE">Offline</option>
-                        </select>
-                        <textarea id="edit-notes" placeholder="Notes"></textarea>
-                        <button type="submit" class="btn">Update Meeting</button>
-                    </form>
-                </div>
-            </div>
+
             <section>
-                <h3>Details</h3>
+                <div class="item-header">
+                    <h3>Meeting Details</h3>
+                    <div class="action-buttons" id="detail-actions" style="display: none;">
+                        <button class="btn-icon" id="edit-meeting-btn" title="Edit Meeting">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" id="delete-meeting-btn" title="Delete Meeting" style="color: var(--danger);">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
                 <div id="details" class="muted">Select a meeting to view details</div>
             </section>
         </div>
     </div>
 </main>
+
+<!-- Edit Meeting Modal -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Meeting</h2>
+            <button class="modal-close" onclick="Meetings.closeEditModal()">&times;</button>
+        </div>
+
+        <form id="edit-meeting-form">
+            <input type="hidden" id="edit-id">
+
+            <div class="row">
+                <div>
+                    <input id="edit-title" placeholder="Title" required>
+                </div>
+                <div>
+                    <select id="edit-clientId" required></select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <select id="edit-assignedTo" required></select>
+                </div>
+                <div>
+                    <input type="date" id="edit-date" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <input type="time" id="edit-time" required>
+                </div>
+                <div>
+                    <input type="number" id="edit-duration" placeholder="Duration (hours)" min="1" max="8" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <select id="edit-type" required>
+                        <option value="">-- Type --</option>
+                        <option value="PROPOSAL">Proposal</option>
+                        <option value="SITEVISIT">Site Visit</option>
+                        <option value="NEGOTIATION">Negotiation</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="edit-status" required>
+                        <option value="">-- Status --</option>
+                        <option value="SCHEDULED">Scheduled</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <select id="edit-location" required>
+                        <option value="">-- Location --</option>
+                        <option value="ONLINE">Online</option>
+                        <option value="OFFLINE">Offline</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <h4>Notes</h4>
+                <div id="notes-list"></div>
+
+                <div class="add-note-form">
+                    <input type="text" id="new-note" class="add-note-input" placeholder="Add a new note">
+                    <button type="button" class="btn-primary" id="add-note-btn" style="padding: 8px 12px;">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Meeting
+                </button>
+                <button type="button" class="btn" onclick="Meetings.closeEditModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+
+            <div id="edit-meeting-msg" class="muted" style="margin-top: 12px;"></div>
+        </form>
+    </div>
+</div>
+
 <script src="/meetings.js"></script>
 </body>
 </html>
