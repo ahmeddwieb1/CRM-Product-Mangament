@@ -1,8 +1,10 @@
+
+// Basic data
 const token = localStorage.getItem('token');
 const user = localStorage.getItem('username') || 'User';
+const me = { username: user };
 
-const me = {username: user};
-
+// Check token validity
 function isJwt(t) {
     return typeof t === 'string' && t.split('.').length === 3;
 }
@@ -11,20 +13,45 @@ if (!isJwt(token)) {
     localStorage.clear();
     window.location.href = '/auth.html';
 }
+
+// Update UI
 document.getElementById('welcome').textContent = 'Welcome, ' + user;
 
+// Logout
 document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear();
     window.location.href = '/auth.html';
 });
 
-const authHeaders = {'Authorization': 'Bearer ' + token};
+const authHeaders = { 'Authorization': 'Bearer ' + token };
 
 function authFetch(url, options = {}) {
     const headers = Object.assign({}, options.headers || {}, authHeaders);
-    return fetch(url, {...options, headers});
+    return fetch(url, { ...options, headers });
 }
 
+// Function to get badge class based on status
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case 'FRESH_LEAD': return 'badge-info';
+        case 'FOLLOW_UP': return 'badge-warning';
+        case 'SCHEDULED_VISIT': return 'badge-info';
+        case 'OPEN_DEAL': return 'badge-success';
+        case 'CLOSED_DEAL': return 'badge-success';
+        case 'NO_ANSWER': return 'badge-danger';
+        default: return 'badge-info';
+    }
+}
+
+// Function to format status text
+function formatStatusText(status) {
+    return status.toLowerCase()
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+// Load all users for dropdown
 async function fetchAllUsers() {
     try {
         const response = await authFetch('/api/admin');
@@ -32,133 +59,52 @@ async function fetchAllUsers() {
             throw new Error('Failed to fetch users');
         }
         const users = await response.json();
-        populateUserDropdown(users);
+        populateUserDropdowns(users);
     } catch (error) {
         console.error('Error fetching users:', error);
-        // Fallback: استخدام المستخدم الحالي فقط
-        const select = document.getElementById('lf-assigned');
-        select.innerHTML = '';
-        const option = document.createElement('option');
-        option.value = me.username;
-        option.textContent = me.username;
-        select.appendChild(option);
-    }
-}
-
-// دالة لملء dropdown بالمستخدمين
-function populateUserDropdown(users) {
-    const dropdown = document.getElementById('lf-assigned');
-
-    // مسح الخيارات الحالية باستثناء الخيار الأول
-    while (dropdown.options.length > 1) {
-        dropdown.remove(1);
-    }
-
-    // إضافة المستخدمين إلى dropdown
-    users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.id; // إرسال ID المستخدم للخلفية
-        option.textContent = user.username; // عرض اسم المستخدم في dropdown
-        dropdown.appendChild(option);
-    });
-
-    // تعيين المستخدم الحالي كافتراضي إذا كان موجوداً
-    if (me.username) {
-        const currentUserOption = Array.from(dropdown.options).find(opt => opt.textContent === me.username);
-        if (currentUserOption) {
-            dropdown.value = currentUserOption.value;
-        }
-    }
-}
-
-const listEl = document.getElementById('list');
-const detailsEl = document.getElementById('details');
-
-//todo
-function renderDetails(lead) {
-    if (!lead) {
-        detailsEl.innerHTML = '<span class="muted">Select a lead to view details</span>';
-        return;
-    }
-    detailsEl.classList.remove('muted');
-
-    // استخدام assignedToName إذا كان متوفراً، أو البحث عن الاسم إذا كان الـ ID متوفراً
-    const assignedName = lead.assignedToName ||
-        (lead.assignedToId ? getUsernameFromId(lead.assignedToId) : '');
-
-    detailsEl.innerHTML = `
-      <h3>
-          ${lead.leadName || 'Untitled'}
-          <button onclick="deleteLead('${lead.id}')" style="margin-left:10px;color:red;">Delete</button>
-          <button onclick="loadLeadForEdit('${lead.id}')" style="margin-left:10px;color:blue;">Edit</button>
-      </h3>
-      <div class="kv">
-          <div>Lead name</div><div><strong>${lead.leadName || ''}</strong></div>
-          <div>Phone</div><div>${lead.phone || ''}</div>
-          <div>Budget</div><div>${lead.budget ?? ''}</div>
-          <div>Source</div><div>${lead.leadSource || ''}</div>
-          <div>Status</div><div>${lead.leadStatus || ''}</div>
-          <div>Assigned To</div><div>${assignedName || ''}</div>
-          <div>Notes</div>
-          <div>
-              ${(lead.notes && lead.notes.length > 0)
-        ? lead.notes.map((note) => `
-                  <div>${note} 
-                      <button onclick="deleteNote('${lead.id}', '${note.replace(/'/g, "\\'")}')" style="color:red; margin-left:10px; border:none; background:none; cursor:pointer;">×</button>
-                  </div>
-              `).join('') : '<span class="muted">No notes</span>'}
-              
-              <div style="margin-top: 10px;">
-                  <input type="text" id="new-note-${lead.id}" placeholder="Add new note" 
-                         style="padding:4px; border:1px solid #cbd5e1; border-radius:4px;">
-                  <button onclick="addNote('${lead.id}')" 
-                          style="margin-left:5px; padding:4px 8px; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">
-                      Add Note
-                  </button>
-              </div>
-          </div>
-      </div>`;
-}
-
-function getUsernameFromId(userId) {
-    try {
-        const dropdown = document.getElementById('lf-assigned');
-        if (!dropdown) return userId;
-
-        const option = Array.from(dropdown.options).find(opt => opt.value === userId);
-        return option ? option.textContent : userId;
-    } catch (e) {
-        console.error('Error getting username from ID:', e);
-        return userId;
-    }
-}
-
-function renderList(leads) {
-    if (!leads || leads.length === 0) {
-        listEl.innerHTML = '<span class="muted">No leads</span>';
-        renderDetails(null);
-        return;
-    }
-    listEl.innerHTML = '';
-    leads.forEach((l, idx) => {
-        const item = document.createElement('div');
-        item.className = 'item' + (idx === 0 ? ' active' : '');
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = `${l.leadName || 'Lead'} (${l.leadStatus || ''})`;
-        textSpan.addEventListener('click', () => {
-            document.querySelectorAll('.item').forEach(el => el.classList.remove('active'));
-            item.classList.add('active');
-            renderDetails(l);
+        // Fallback: use current user only
+        const selects = document.querySelectorAll('select[id$="assigned"]');
+        selects.forEach(select => {
+            select.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = me.username;
+            option.textContent = me.username;
+            select.appendChild(option);
         });
-        item.appendChild(textSpan);
-        listEl.appendChild(item);
-    });
-    renderDetails(leads[0]);
+    }
 }
 
+// Populate user dropdowns
+function populateUserDropdowns(users) {
+    const dropdowns = document.querySelectorAll('select[id$="assigned"]');
+
+    dropdowns.forEach(dropdown => {
+        // Clear existing options except the first one
+        while (dropdown.options.length > 1) {
+            dropdown.remove(1);
+        }
+
+        // Add users to dropdown
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.username;
+            dropdown.appendChild(option);
+        });
+
+        // Set current user as default if exists
+        if (me.username) {
+            const currentUserOption = Array.from(dropdown.options).find(opt => opt.textContent === me.username);
+            if (currentUserOption) {
+                dropdown.value = currentUserOption.value;
+            }
+        }
+    });
+}
+
+// Load leads
 async function loadLeads() {
-    // try admin view
+    // try admin view first
     let res = await authFetch('/api/lead');
     if (res.status === 200) {
         const data = await res.json();
@@ -172,90 +118,167 @@ async function loadLeads() {
         renderList(data);
         return;
     }
-    listEl.innerHTML = '<span class="muted">Failed to load leads</span>';
+    document.getElementById('list').innerHTML = '<div class="muted">Failed to load leads</div>';
 }
 
-document.getElementById('lead-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const msg = document.getElementById('lf-msg');
-    msg.textContent = '';
+// Render leads list
+function renderList(leads) {
+    const listEl = document.getElementById('list');
 
-    const assignedSelect = document.getElementById('lf-assigned');
-    const assignedToId = assignedSelect.value;
+    if (!leads || leads.length === 0) {
+        listEl.innerHTML = '<div class="muted">No leads found</div>';
+        renderDetails(null);
+        return;
+    }
 
-    const notesText = document.getElementById('lf-notes').value.trim();
-    const notes = notesText ? [notesText] : [];
+    listEl.innerHTML = leads.map(lead => `
+                <div class="item" data-id="${lead.id}">
+                    <div class="item-header">
+                        <div class="item-name">${lead.leadName || lead.name || 'Unnamed Lead'}</div>
+                        <span class="badge ${getStatusBadgeClass(lead.leadStatus || lead.status)}">
+                            ${formatStatusText(lead.leadStatus || lead.status)}
+                        </span>
+                    </div>
+                    <div class="item-phone">${lead.phone || 'No phone'}</div>
+                    <div class="item-details">
+                        <span>Budget: $${lead.budget || '0'}</span>
+                        <span>Assigned: ${getUsernameFromId(lead.assignedToId) || 'Unassigned'}</span>
+                    </div>
+                </div>
+            `).join('');
 
-    const body = {
-        leadName: document.getElementById('lf-name').value.trim(),
-        phone: document.getElementById('lf-phone').value.trim(),
-        budget: parseFloat(document.getElementById('lf-budget').value),
-        leadSource: document.getElementById('lf-source').value,
-        leadStatus: document.getElementById('lf-status').value,
-        assignedToId: assignedToId,
-        notes: notes
-    };
-    console.log("body :", body)
-
-    const btn = document.getElementById('lf-btn');
-    btn.disabled = true;
-    btn.textContent = 'Creating...';
-
-    try {
-        const res = await authFetch('/api/lead', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
+    // Add click event to items
+    document.querySelectorAll('.item').forEach((item, idx) => {
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const lead = leads.find(l => l.id == item.dataset.id);
+            renderDetails(lead);
         });
 
-        if (!res.ok) {
-            const t = await res.json().catch(() => ({error: 'Failed'}));
-            throw new Error(t.error || 'Failed to create lead');
+        // Select first item by default
+        if (idx === 0) {
+            item.classList.add('active');
+            renderDetails(leads[0]);
         }
-        msg.textContent = 'Lead created';
-        document.getElementById('lead-form').reset();
-        loadLeads();
-    } catch (err) {
-        msg.textContent = err.message || 'Failed to create lead';
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Create Lead';
+    });
+}
+
+// Get username from ID
+function getUsernameFromId(userId) {
+    try {
+        const dropdown = document.getElementById('lf-assigned');
+        if (!dropdown) return userId;
+
+        const option = Array.from(dropdown.options).find(opt => opt.value === userId);
+        return option ? option.textContent : userId;
+    } catch (e) {
+        console.error('Error getting username from ID:', e);
+        return userId;
     }
-});
-
-
-// دالة فتح وإغلاق modal التعديل
-function openEditLeadModal() {
-    document.getElementById('editLeadModal').style.display = 'block';
 }
 
-function closeEditLeadModal() {
-    document.getElementById('editLeadModal').style.display = 'none';
+// Show lead details
+function renderDetails(lead) {
+    const detailsEl = document.getElementById('details');
+    const actionsEl = document.getElementById('detail-actions');
+
+    if (!lead) {
+        detailsEl.innerHTML = '<span class="muted">Select a lead to view details</span>';
+        actionsEl.style.display = 'none';
+        return;
+    }
+
+    // Use assignedToName if available, or find name if ID is available
+    const assignedName = lead.assignedToName ||
+        (lead.assignedToId ? getUsernameFromId(lead.assignedToId) : '');
+
+    detailsEl.innerHTML = `
+                <div class="kv">
+                    <strong>Name:</strong>
+                    <span>${lead.leadName || lead.name || 'Unnamed Lead'}</span>
+                </div>
+                <div class="kv">
+                    <strong>Phone:</strong>
+                    <span>${lead.phone || 'Not provided'}</span>
+                </div>
+                <div class="kv">
+                    <strong>Budget:</strong>
+                    <span>$${lead.budget || '0'}</span>
+                </div>
+                <div class="kv">
+                    <strong>Source:</strong>
+                    <span>${lead.leadSource || lead.source || 'Not specified'}</span>
+                </div>
+                <div class="kv">
+                    <strong>Status:</strong>
+                    <span class="badge ${getStatusBadgeClass(lead.leadStatus || lead.status)}">
+                        ${formatStatusText(lead.leadStatus || lead.status)}
+                    </span>
+                </div>
+                <div class="kv">
+                    <strong>Assigned To:</strong>
+                    <span>${assignedName || 'Unassigned'}</span>
+                </div>
+                <div class="kv">
+                    <strong>Notes:</strong>
+                    <div>
+                        ${(lead.notes && lead.notes.length > 0)
+        ? lead.notes.map(note => `
+                                <div class="note-item">
+                                    <span>${note}</span>
+                                    <div class="note-actions">
+                                        <button class="note-delete" onclick="deleteNote('${lead.id}', '${note.replace(/'/g, "\\'")}')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')
+        : '<span class="muted">No notes</span>'
+    }
+                        <div class="add-note-form">
+                            <input type="text" id="new-note-${lead.id}" class="add-note-input" placeholder="Add a new note">
+                            <button type="button" class="btn-primary" onclick="addNote('${lead.id}')" style="padding: 8px 12px;">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+    actionsEl.style.display = 'flex';
+
+    // Set up edit and delete buttons
+    document.getElementById('edit-lead-btn').onclick = () => loadLeadForEdit(lead.id);
+    document.getElementById('delete-lead-btn').onclick = () => deleteLead(lead.id);
 }
 
-// دالة تحميل الـ lead للتعديل
+// Load lead for editing
 async function loadLeadForEdit(leadId) {
     try {
         const res = await authFetch(`/api/lead/${leadId}`);
         if (res.ok) {
             const lead = await res.json();
 
-            // ملء نموذج التعديل
+            // Fill edit form
             document.getElementById('edit-id').value = lead.id;
-            document.getElementById('edit-name').value = lead.leadName || '';
+            document.getElementById('edit-name').value = lead.leadName || lead.name || '';
             document.getElementById('edit-phone').value = lead.phone || '';
             document.getElementById('edit-budget').value = lead.budget || '';
-            document.getElementById('edit-source').value = lead.leadSource || '';
-            document.getElementById('edit-status').value = lead.leadStatus || '';
-            document.getElementById('edit-notes').value = Array.isArray(lead.notes) ? lead.notes.join('\n') : '';
+            document.getElementById('edit-source').value = lead.leadSource || lead.source || '';
+            document.getElementById('edit-status').value = lead.leadStatus || lead.status || '';
 
-            // تحميل المستخدمين للـ dropdown
-            await loadUsersForEditDropdown();
+            // Load users for dropdown
+            await fetchAllUsers();
 
-            // تعيين القيمة المحددة للمستخدم
+            // Set assigned value
             document.getElementById('edit-assigned').value = lead.assignedToId || '';
 
-            openEditLeadModal();
+            // Render notes
+            renderNotesList(lead.notes || []);
+
+            // Open modal
+            document.getElementById('editLeadModal').style.display = 'flex';
         } else {
             const error = await readError(res);
             alert('Failed to load lead: ' + error);
@@ -266,85 +289,56 @@ async function loadLeadForEdit(leadId) {
     }
 }
 
-// دالة تحميل المستخدمين لـ dropdown التعديل
-async function loadUsersForEditDropdown() {
-    const select = document.getElementById('edit-assigned');
-    try {
-        const res = await authFetch('/api/admin');
-        if (res.ok) {
-            const users = await res.json();
-            select.innerHTML = '<option value="">-- Select User --</option>';
-            users.forEach(user => {
-                const opt = document.createElement('option');
-                opt.value = user.id;
-                opt.textContent = user.username;
-                select.appendChild(opt);
-            });
-        }
-    } catch (e) {
-        console.error('Error loading users for edit:', e);
+// Render notes list in edit modal
+function renderNotesList(notes) {
+    const notesList = document.getElementById('notes-list');
+    notesList.innerHTML = '';
+
+    if (notes && notes.length > 0) {
+        notes.forEach(note => {
+            const noteItem = document.createElement('div');
+            noteItem.className = 'note-item';
+            noteItem.innerHTML = `
+                        <span>${note}</span>
+                        <div class="note-actions">
+                            <button class="note-delete" onclick="deleteNoteFromEdit('${note.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+            notesList.appendChild(noteItem);
+        });
+    } else {
+        notesList.innerHTML = '<div class="muted">No notes</div>';
     }
 }
 
-document.getElementById('edit-lead-form')
-    .addEventListener('submit', async function (e) {
-        e.preventDefault();
+// Delete note from edit modal
+function deleteNoteFromEdit(noteContent) {
+    const notesList = document.getElementById('notes-list');
+    const notes = Array.from(notesList.querySelectorAll('.note-item span'))
+        .map(span => span.textContent)
+        .filter(text => text !== noteContent);
 
-        const leadId = document.getElementById('edit-id').value;
-        const btn = this.querySelector('button[type="submit"]');
-        const msg = document.getElementById('edit-lead-msg');
+    renderNotesList(notes);
+}
 
-        const body = {
-            leadName: document.getElementById('edit-name').value,
-            phone: document.getElementById('edit-phone').value,
-            budget: parseFloat(document.getElementById('edit-budget').value),
-            leadSource: document.getElementById('edit-source').value,
-            leadStatus: document.getElementById('edit-status').value,
-            assignedToId: document.getElementById('edit-assigned').value,
-            notes: document.getElementById('edit-notes').value ?
-                document.getElementById('edit-notes').value.split('\n') : []
-        };
-        console.log('Request Body:', body);
+// Close edit lead modal
+function closeEditLeadModal() {
+    document.getElementById('editLeadModal').style.display = 'none';
+}
 
-        btn.disabled = true;
-        btn.textContent = 'Updating...';
-        msg.textContent = '';
-
-        try {
-            const res = await authFetch(`/api/lead/${leadId}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
-
-            if (res.ok) {
-                msg.textContent = 'Lead updated successfully';
-                setTimeout(() => {
-                    closeEditLeadModal();
-                    loadLeads();
-                }, 1000);
-            } else {
-                const error = await readError(res);
-                msg.textContent = 'Failed to update lead: ' + error;
-            }
-        } catch (e) {
-            console.error('Error updating lead:', e);
-            msg.textContent = 'Unexpected error occurred';
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Update Lead';
-        }
-    });
-
-// دالة حذف الـ lead
+// Delete lead
 async function deleteLead(leadId) {
     if (!confirm('Are you sure you want to delete this lead?')) return;
 
     try {
-        const res = await authFetch(`/api/lead/${leadId}`, {method: 'DELETE'});
+        const res = await authFetch(`/api/lead/${leadId}`, { method: 'DELETE' });
         if (res.ok) {
             alert('Lead deleted successfully');
-            loadLeads(); // إعادة تحميل القائمة
+            loadLeads();
+            document.getElementById('details').innerHTML = '<div class="muted">Select a lead to view details</div>';
+            document.getElementById('detail-actions').style.display = 'none';
         } else {
             const error = await readError(res);
             alert('Failed to delete lead: ' + error);
@@ -355,7 +349,7 @@ async function deleteLead(leadId) {
     }
 }
 
-// دالة إضافة ملاحظة
+// Add note to lead
 async function addNote(leadId) {
     const noteInput = document.getElementById(`new-note-${leadId}`);
     const noteContent = noteInput.value.trim();
@@ -368,13 +362,13 @@ async function addNote(leadId) {
     try {
         const res = await authFetch(`/api/lead/${leadId}/notes`, {
             method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: noteContent})
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: noteContent })
         });
 
         if (res.ok) {
-            noteInput.value = ''; // مسح حقل الإدخال
-            loadLeads(); // إعادة تحميل القائمة
+            noteInput.value = ''; // Clear input field
+            loadLeads(); // Reload leads to refresh the view
         } else {
             const error = await readError(res);
             alert('Failed to add note: ' + error);
@@ -385,19 +379,19 @@ async function addNote(leadId) {
     }
 }
 
-// دالة حذف ملاحظة
+// Delete note from lead
 async function deleteNote(leadId, noteContent) {
     if (!confirm('Are you sure you want to delete this note?')) return;
 
     try {
         const res = await authFetch(`/api/lead/${leadId}/notes`, {
             method: 'DELETE',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: noteContent})
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: noteContent })
         });
 
         if (res.ok) {
-            loadLeads(); // إعادة تحميل القائمة
+            loadLeads(); // Reload leads to refresh the view
         } else {
             const error = await readError(res);
             alert('Failed to delete note: ' + error);
@@ -408,7 +402,144 @@ async function deleteNote(leadId, noteContent) {
     }
 }
 
-// دالة مساعدة لقراءة الأخطاء
+// Handle form submission for new lead
+document.getElementById('lead-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('lf-btn');
+    const msg = document.getElementById('lf-msg');
+
+    btn.disabled = true;
+    msg.textContent = 'Creating lead...';
+
+    const notesText = document.getElementById('lf-notes').value.trim();
+    const notes = notesText ? [notesText] : [];
+
+    const body = {
+        leadName: document.getElementById('lf-name').value.trim(),
+        phone: document.getElementById('lf-phone').value.trim(),
+        budget: parseFloat(document.getElementById('lf-budget').value),
+        leadSource: document.getElementById('lf-source').value,
+        leadStatus: document.getElementById('lf-status').value,
+        assignedToId: document.getElementById('lf-assigned').value,
+        notes: notes
+    };
+
+    try {
+        const res = await authFetch('/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            msg.textContent = 'Lead created successfully!';
+            msg.style.color = 'var(--success)';
+
+            // Reset form
+            document.getElementById('lead-form').reset();
+
+            // Reload leads
+            loadLeads();
+        } else {
+            const error = await readError(res);
+            throw new Error(error);
+        }
+    } catch (err) {
+        msg.textContent = err.message || 'Failed to create lead';
+        msg.style.color = 'var(--danger)';
+    } finally {
+        btn.disabled = false;
+        setTimeout(() => {
+            msg.textContent = '';
+        }, 3000);
+    }
+});
+
+// Handle form submission for editing lead
+document.getElementById('edit-lead-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const msg = document.getElementById('edit-lead-msg');
+    const btn = this.querySelector('button[type="submit"]');
+
+    msg.textContent = 'Updating lead...';
+    btn.disabled = true;
+
+    // Get notes from the list
+    const notes = Array.from(document.getElementById('notes-list').querySelectorAll('.note-item span'))
+        .map(span => span.textContent);
+
+    const body = {
+        id: document.getElementById('edit-id').value,
+        leadName: document.getElementById('edit-name').value,
+        phone: document.getElementById('edit-phone').value,
+        budget: parseFloat(document.getElementById('edit-budget').value),
+        leadSource: document.getElementById('edit-source').value,
+        leadStatus: document.getElementById('edit-status').value,
+        assignedToId: document.getElementById('edit-assigned').value,
+        notes: notes
+    };
+
+    try {
+        const res = await authFetch(`/api/lead/${body.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+            msg.textContent = 'Lead updated successfully!';
+            msg.style.color = 'var(--success)';
+
+            // Close modal and reload leads
+            setTimeout(() => {
+                closeEditLeadModal();
+                loadLeads();
+            }, 1000);
+        } else {
+            const error = await readError(res);
+            throw new Error(error);
+        }
+    } catch (err) {
+        msg.textContent = err.message || 'Failed to update lead';
+        msg.style.color = 'var(--danger)';
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+// Add note in edit modal
+document.getElementById('add-note-btn').addEventListener('click', function() {
+    const noteInput = document.getElementById('new-note');
+    const noteContent = noteInput.value.trim();
+
+    if (!noteContent) {
+        alert('Please enter a note');
+        return;
+    }
+
+    const notesList = document.getElementById('notes-list');
+    const noteItem = document.createElement('div');
+    noteItem.className = 'note-item';
+    noteItem.innerHTML = `
+                <span>${noteContent}</span>
+                <div class="note-actions">
+                    <button class="note-delete" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+    if (notesList.querySelector('.muted')) {
+        notesList.innerHTML = '';
+    }
+
+    notesList.appendChild(noteItem);
+    noteInput.value = '';
+});
+
+// Helper function to read error response
 async function readError(res) {
     try {
         const j = await res.json();
@@ -422,8 +553,8 @@ async function readError(res) {
     }
 }
 
-// استدعاء الدوال عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function () {
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
     fetchAllUsers();
     loadLeads();
 });

@@ -65,10 +65,12 @@ public class securityConfig {
                         .requestMatchers("/api/auth/public/**").permitAll()
                         .requestMatchers(
                                 "/", "/index.html", "/auth", "/auth.html", "/dashboard",
-                                "/dashboard.html", "/settings", "/settings.html", "/leads",
-                                "/leads.html", "/meetings", "/meetings.html","/meetings.js","/lead.js",
+                                "/dashboard.html","/dashboard.js", "/settings", "/settings.html", "/leads",
+                                "/leads.html", "/meetings", "/meetings.html","/meetings.js",
                                 "/styles.css", "/auth.js", "/favicon.ico",
-                                "/static/**", "/assets/**")
+                                "/static/**", "/assets/**"
+                                ,"/lead.js"
+                        )
                         .permitAll()
                         .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/error").permitAll()
