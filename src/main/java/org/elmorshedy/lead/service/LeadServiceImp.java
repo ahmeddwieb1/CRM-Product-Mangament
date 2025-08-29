@@ -86,7 +86,17 @@ public class LeadServiceImp implements LeadService {
         Lead savedLead = leadRepo.save(updatelead);
         return leadMapper.toDTO(savedLead);
     }
+    public LeadDTO updateLeadStatus(ObjectId id, RequestLead leadRequest) {
+        Lead lead = leadRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Lead not found"));
 
+        if (leadRequest.getLeadStatus() != null) {
+            lead.setLeadStatus(leadRequest.getLeadStatus());
+        }
+
+        Lead savedLead = leadRepo.save(lead);
+        return leadMapper.toDTO(savedLead);
+    }
     @Override
     public void deleteLead(ObjectId id) {
         if (!leadRepo.existsById(id)) {
