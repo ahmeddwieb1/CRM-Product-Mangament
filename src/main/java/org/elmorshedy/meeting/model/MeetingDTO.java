@@ -15,7 +15,7 @@ public class MeetingDTO {
     private Type type;
     private Status status;
     private Location location;
-    private String assignedTo;
+    private String assignedToName;
     private String clientName;
     private List<String> notes;
 }

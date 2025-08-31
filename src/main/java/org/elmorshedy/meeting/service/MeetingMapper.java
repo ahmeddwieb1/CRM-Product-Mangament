@@ -1,6 +1,5 @@
 package org.elmorshedy.meeting.service;
 
-import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.Lead;
 import org.elmorshedy.lead.repo.LeadRepo;
 import org.elmorshedy.meeting.model.Meeting;
@@ -9,9 +8,6 @@ import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.List;
 
 @Service
 public class MeetingMapper {
@@ -44,7 +40,7 @@ public class MeetingMapper {
 
         if (meeting.getAssignedToId() != null) {
             User user = userRepo.findById(meeting.getAssignedToId()).orElse(null);
-            dto.setAssignedTo(user != null ? user.getUsername() : "Unknown User");
+            dto.setAssignedToName(user != null ? user.getUsername() : "Unknown User");
         }
 
         return dto;
