@@ -142,7 +142,7 @@ function renderList(leads) {
                     <div class="item-phone">${lead.phone || 'No phone'}</div>
                     <div class="item-details">
                         <span>Budget: $${lead.budget || '0'}</span>
-                        <span>Assigned: ${getUsernameFromId(lead.assignedToId) || 'Unassigned'}</span>
+                        <span>Assigned: ${lead.assignedToName}</span>
                     </div>
                 </div>
             `).join('');
@@ -163,20 +163,30 @@ function renderList(leads) {
         }
     });
 }
-
+//todo
 // Get username from ID
 function getUsernameFromId(userId) {
     try {
-        const dropdown = document.getElementById('lf-assigned');
-        if (!dropdown) return userId;
+        console.log("🔎 looking for:", userId);
 
-        const option = Array.from(dropdown.options).find(opt => opt.value === userId);
-        return option ? option.textContent : userId;
+        const dropdown = document.getElementById('lf-assigned');
+        if (!dropdown) {
+            console.warn("⚠️ dropdown not found!");
+            return userId;
+        }
+
+        const option = Array.from(dropdown.options)
+            .find(opt => opt.value === String(userId));
+
+        console.log("👉 matched option:", option);
+
+        return option ? option.textContent : 'Unassigned';
     } catch (e) {
         console.error('Error getting username from ID:', e);
-        return userId;
+        return 'Unassigned';
     }
 }
+
 
 // Show lead details
 function renderDetails(lead) {
@@ -188,10 +198,9 @@ function renderDetails(lead) {
         actionsEl.style.display = 'none';
         return;
     }
-
+//todo
     // Use assignedToName if available, or find name if ID is available
-    const assignedName = lead.assignedToName ||
-        (lead.assignedToId ? getUsernameFromId(lead.assignedToId) : '');
+    const assignedName = lead.assignedToName;
 
     detailsEl.innerHTML = `
                 <div class="kv">
@@ -215,7 +224,16 @@ function renderDetails(lead) {
                     <span class="badge ${getStatusBadgeClass(lead.leadStatus || lead.status)}">
                         ${formatStatusText(lead.leadStatus || lead.status)}
                     </span>
+                    <select id="status-dropdown-${lead.id}" onchange="updateLeadStatus('${lead.id}', this.value)">
+                        <option value="FRESH_LEAD" ${lead.leadStatus === 'FRESH_LEAD' ? 'selected' : ''}>Fresh Lead</option>
+                        <option value="FOLLOW_UP" ${lead.leadStatus === 'FOLLOW_UP' ? 'selected' : ''}>Follow Up</option>
+                        <option value="SCHEDULED_VISIT" ${lead.leadStatus === 'SCHEDULED_VISIT' ? 'selected' : ''}>Scheduled Visit</option>
+                        <option value="OPEN_DEAL" ${lead.leadStatus === 'OPEN_DEAL' ? 'selected' : ''}>Open Deal</option>
+                        <option value="CLOSED_DEAL" ${lead.leadStatus === 'CLOSED_DEAL' ? 'selected' : ''}>Closed Deal</option>
+                        <option value="NO_ANSWER" ${lead.leadStatus === 'NO_ANSWER' ? 'selected' : ''}>No Answer</option>
+                    </select>
                 </div>
+
                 <div class="kv">
                     <strong>Assigned To:</strong>
                     <span>${assignedName || 'Unassigned'}</span>
@@ -538,6 +556,29 @@ document.getElementById('add-note-btn').addEventListener('click', function() {
     notesList.appendChild(noteItem);
     noteInput.value = '';
 });
+async function updateLeadStatus(leadId, newStatus) {
+    try {
+        const res = await authFetch(`/api/lead/${leadId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ leadStatus: newStatus })
+        });
+
+        if (res.ok) {
+            const updatedLead = await res.json();
+            renderDetails(updatedLead); // refresh view
+            loadLeads(); // refresh list
+        } else {
+            const error = await readError(res);
+            alert("Error updating status: " + error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Unexpected error occurred");
+    }
+}
 
 // Helper function to read error response
 async function readError(res) {

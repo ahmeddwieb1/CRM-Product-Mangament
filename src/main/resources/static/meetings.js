@@ -260,6 +260,7 @@ class Meetings {
             </div>
             <div class="kv">
                 <strong>Type:</strong>
+<!--                todo-->
                 <span>${meeting.type || 'Not specified'}</span>
             </div>
             <div class="kv">
