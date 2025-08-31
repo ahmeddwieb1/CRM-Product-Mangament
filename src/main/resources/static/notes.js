@@ -30,7 +30,8 @@ function authFetch(url, options = {}) {
 }
 
 // Handle form submission
-document.getElementById('note-form').addEventListener('submit', async function(e) {
+document.getElementById('note-form')
+    .addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const btn = document.getElementById('n-btn');
@@ -85,8 +86,16 @@ document.getElementById('note-form').addEventListener('submit', async function(e
         });
 
         if (res.ok) {
-            msg.textContent = 'Note created successfully!';
-            msg.style.color = 'var(--success)';
+            const reply = await res.text();
+            msg.innerHTML = `
+                <div style="color: var(--success); margin-bottom: 10px;">
+                    <i class="fas fa-check-circle"></i> Note created successfully!
+                </div>
+                <div style="background: var(--light); 
+                padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <strong>Reply:</strong> ${reply}
+                </div>
+            `;
 
             // Reset form
             document.getElementById('note-form').reset();
@@ -102,6 +111,6 @@ document.getElementById('note-form').addEventListener('submit', async function(e
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-plus"></i> Submit Note';
-        setTimeout(() => { msg.textContent = ''; }, 3000);
+        setTimeout(() => { msg.textContent = ''; }, 30000);
     }
 });

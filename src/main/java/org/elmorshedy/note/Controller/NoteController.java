@@ -22,9 +22,11 @@ public class NoteController {
     }
 
     @PostMapping
-    public ResponseEntity<Note> createnote(@RequestBody NoteRequest noteRequest) {
+    public ResponseEntity<?> createnote(@RequestBody NoteRequest noteRequest) {
         Note createdNote = noteService.createNote(noteRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdNote);
+        String reply = noteService.getReply(noteRequest);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(reply);
     }
 
     @DeleteMapping("/{noteid}")

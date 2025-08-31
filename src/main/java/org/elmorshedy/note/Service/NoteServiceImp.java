@@ -30,11 +30,9 @@ public class NoteServiceImp implements NoteServices {
         note.setGender(noteRequest.getGender());
         note.setEmail(noteRequest.getEmail());
 
-        Phone number = numberRepo.findByPhone(noteRequest.getPhone())
-                .orElseThrow(() -> new RuntimeException("Phone not found"));
-        if (number != null) {
-            note.setPhone(number);
-        }
+        Optional<Phone> number = numberRepo.findByPhone(noteRequest.getPhone());
+        number.ifPresent(note::setPhone);
+
         note.setContent(noteRequest.getContent());
         return note;
     }
