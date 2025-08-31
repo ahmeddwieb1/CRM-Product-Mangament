@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyApp • Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #1e2a38;
+            --gray: #64748b;
+            --light-gray: #f1f5f9;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 12px rgba(2, 6, 23, 0.08);
+            --header-shadow: 0 2px 8px rgba(2, 6, 23, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--light-gray);
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: #ffffff;
+            box-shadow: var(--header-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand i {
+            font-size: 1.8rem;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            background: var(--danger);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #e10f5a;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .muted {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(67, 97, 238, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .top {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="top">
+    <div class="brand">
+        <i class="fas fa-sticky-note"></i>
+        <span>MyApp</span>
+    </div>
+    <div class="nav-container">
+        <a class="nav" href="/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="nav" href="/meetings.html"><i class="fas fa-video"></i> Meetings</a>
+        <a class="nav" href="/leads.html"><i class="fas fa-users"></i> Leads</a>
+        <a class="nav active" href="/notes.html"><i class="fas fa-sticky-note"></i> Notes</a>
+        <a class="nav" href="/settings.html"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+    <div class="user-info">
+        <span id="welcome" class="muted"></span>
+        <button class="btn" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
+    </div>
+</header>
+
+<main class="wrap">
+    <div class="card" style="margin-bottom: 20px;">
+        <h2>Notes Management</h2>
+        <p class="muted">Create and manage your notes. Keep track of important information.</p>
+    </div>
+
+    <div class="card">
+        <h3>Create a New Note</h3>
+        <p class="muted">Fill out the fields below to add a new note</p>
+
+        <form id="note-form">
+            <div class="form-group">
+                <label for="n-username">Username</label>
+                <input type="text" id="n-username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="n-gender">Gender</label>
+                <select id="n-gender" name="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="n-email">Email</label>
+                <input type="email" id="n-email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="n-phone">Phone</label>
+                <input type="text" id="n-phone" name="phone" required minlength="10" maxlength="12">
+            </div>
+
+            <div class="form-group">
+                <label for="n-content">Content</label>
+                <textarea id="n-content" name="content" rows="4" required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="n-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Submit Note
+                </button>
+            </div>
+
+            <div id="n-msg" class="muted" style="margin-top: 12px;"></div>
+        </form>
+    </div>
+</main>
+
+<script src="/notes.js"></script>
+</body>
+</html>
