@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyApp • Leads</title>
+    <title>MyApp • Products</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -192,7 +192,7 @@
             color: var(--dark);
         }
 
-        .item-phone {
+        .item-price {
             color: var(--gray);
             font-size: 0.9rem;
         }
@@ -418,6 +418,41 @@
             .row {
                 grid-template-columns: 1fr;
             }
+            .amount-control {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 4px 8px;
+            }
+
+            .amount-control button {
+                background: var(--primary, #007bff);
+                color: #fff;
+                border: none;
+                width: 28px;
+                height: 28px;
+                font-size: 18px;
+                font-weight: bold;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.2s ease-in-out;
+            }
+
+            .amount-control button:hover {
+                background: var(--primary-dark, #0056b3);
+            }
+
+            .amount-control span {
+                min-width: 32px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 16px;
+                color: #333;
+            }
+
         }
     </style>
 </head>
@@ -429,9 +464,9 @@
     </div>
     <div class="nav-container">
         <a class="nav" href="/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
-        <a class="nav" href="/product.html"><i class="fas fa-home"></i> Product</a>
         <a class="nav" href="/meetings.html"><i class="fas fa-video"></i> Meetings</a>
-        <a class="nav active" href="/leads.html"><i class="fas fa-users"></i> Leads</a>
+        <a class="nav" href="/leads.html"><i class="fas fa-users"></i> Leads</a>
+        <a class="nav active" href="/product.html"><i class="fas fa-box"></i> Products</a>
         <a class="nav" href="/settings.html"><i class="fas fa-cog"></i> Settings</a>
     </div>
     <div class="user-info">
@@ -445,184 +480,116 @@
 
 <main class="wrap">
     <div class="card" style="margin-bottom: 20px;">
-        <h2>Leads Management</h2>
-        <p class="muted">Browse and manage your leads. Admin users can see all leads, while others see only their assigned leads.</p>
+        <h2>Products Management</h2>
+        <p class="muted">Browse and manage your products. All users can see all products.</p>
     </div>
 
     <div class="card">
         <div class="grid">
             <section>
-                <h3>All Leads</h3>
-                <p class="muted" id="leads-hint">Admin sees all leads. Others see their own.</p>
+                <h3>All Products</h3>
+                <p class="muted">All users can see all products.</p>
 
                 <div id="list" class="list">
                     <div class="item">
                         <div class="loading"></div>
-                        <span>Loading leads...</span>
+                        <span>Loading products...</span>
                     </div>
                 </div>
 
                 <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border);">
 
-                <h4>Add New Lead</h4>
-                <form id="lead-form">
+                <h4>Add New Product</h4>
+                <form id="product-form">
                     <div class="row">
                         <div>
-                            <input id="lf-name" placeholder="Lead name" required>
+                            <input id="pf-name" placeholder="Product name" required>
                         </div>
                         <div>
-                            <input id="lf-phone" placeholder="Phone (digits)" required>
+                            <input id="pf-price" placeholder="Price" type="number" min="0" step="0.01" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div>
-                            <input id="lf-budget" placeholder="Budget" type="number" min="1" step="0.01" required>
+                            <input id="pf-amount" placeholder="Amount" type="number" min="0" required>
                         </div>
                         <div>
-                            <select id="lf-assigned" required>
-                                <option value="">-- Select User --</option>
-                            </select>
+                            <textarea id="pf-description" placeholder="Description" rows="2"></textarea>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div>
-                            <select id="lf-source" required>
-                                <option value="">Lead Source</option>
-                                <option>SOCIAL_MEDIA</option>
-                                <option>WEBSITE</option>
-                                <option>REFERRAL</option>
-                                <option>COLDCALL</option>
-                                <option>WALK_IN</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="lf-status" required>
-                                <option value="">Lead Status</option>
-                                <option>FRESH_LEAD</option>
-                                <option>FOLLOW_UP</option>
-                                <option>SCHEDULED_VISIT</option>
-                                <option>OPEN_DEAL</option>
-                                <option>CLOSED_DEAL</option>
-                                <option>NO_ANSWER</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <textarea id="lf-notes" placeholder="Initial note (optional)" rows="2"></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn btn-primary" id="lf-btn" type="submit">
-                            <i class="fas fa-plus"></i> Create Lead
+                        <button class="btn btn-primary" id="pf-btn" type="submit">
+                            <i class="fas fa-plus"></i> Create Product
                         </button>
                     </div>
 
-                    <div id="lf-msg" class="muted" style="margin-top: 12px;"></div>
+                    <div id="pf-msg" class="muted" style="margin-top: 12px;"></div>
                 </form>
             </section>
 
             <section>
                 <div class="item-header">
-                    <h3>Lead Details</h3>
+                    <h3>Product Details</h3>
                     <div class="action-buttons" id="detail-actions" style="display: none;">
-                        <button class="btn-icon" id="edit-lead-btn" title="Edit Lead">
+                        <button class="btn-icon" id="edit-product-btn" title="Edit Product">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon" id="delete-lead-btn" title="Delete Lead" style="color: var(--danger);">
+                        <button class="btn-icon" id="delete-product-btn" title="Delete Product" style="color: var(--danger);">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-                <div id="details" class="muted">Select a lead to view details</div>
+                <div id="details" class="muted">Select a product to view details</div>
             </section>
         </div>
     </div>
 </main>
 
-<!-- Edit Lead Modal -->
-<div class="modal" id="editLeadModal">
+<!-- Edit Product Modal -->
+<div class="modal" id="editProductModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Edit Lead</h2>
-            <button class="modal-close" onclick="closeEditLeadModal()">&times;</button>
+            <h2>Edit Product</h2>
+            <button class="modal-close" onclick="closeEditProductModal()">&times;</button>
         </div>
 
-        <form id="edit-lead-form">
+        <form id="edit-product-form">
             <input type="hidden" id="edit-id">
 
             <div class="row">
                 <div>
-                    <input id="edit-name" placeholder="Lead name" required>
+                    <input id="edit-name" placeholder="Product name" required>
                 </div>
                 <div>
-                    <input id="edit-phone" placeholder="Phone (digits)" required>
+                    <input id="edit-price" placeholder="Price" type="number" min="0" step="0.01" required>
                 </div>
             </div>
 
             <div class="row">
                 <div>
-                    <input id="edit-budget" placeholder="Budget" type="number" min="1" step="0.01" required>
+                    <input id="edit-amount" placeholder="Amount" type="number" min="0" required>
                 </div>
                 <div>
-                    <select id="edit-assigned" required>
-                        <option value="">-- Select User --</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="row">
-                <div>
-                    <select id="edit-source" required>
-                        <option value="">Source</option>
-                        <option>SOCIAL_MEDIA</option>
-                        <option>WEBSITE</option>
-                        <option>REFERRAL</option>
-                        <option>COLDCALL</option>
-                        <option>WALK_IN</option>
-                    </select>
-                </div>
-                <div>
-                    <select id="edit-status" required>
-                        <option value="">Status</option>
-                        <option>FRESH_LEAD</option>
-                        <option>FOLLOW_UP</option>
-                        <option>SCHEDULED_VISIT</option>
-                        <option>OPEN_DEAL</option>
-                        <option>CLOSED_DEAL</option>
-                        <option>NO_ANSWER</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="notes-container">
-                <h4>Notes</h4>
-                <div id="notes-list"></div>
-
-                <div class="add-note-form">
-                    <input type="text" id="new-note" class="add-note-input" placeholder="Add a new note">
-                    <button type="button" class="btn-primary" id="add-note-btn" style="padding: 8px 12px;">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
+                    <textarea id="edit-description" placeholder="Description" rows="2"></textarea>
                 </div>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Update Lead
+                    <i class="fas fa-save"></i> Update Product
                 </button>
-                <button type="button" class="btn" onclick="closeEditLeadModal()">
+                <button type="button" class="btn" onclick="closeEditProductModal()">
                     <i class="fas fa-times"></i> Cancel
                 </button>
             </div>
 
-            <div id="edit-lead-msg" class="muted" style="margin-top: 12px;"></div>
+            <div id="edit-product-msg" class="muted" style="margin-top: 12px;"></div>
         </form>
     </div>
 </div>
 
-<script src="/lead.js"></script>
+<script src ="/product.js"></script>
 </body>
 </html>

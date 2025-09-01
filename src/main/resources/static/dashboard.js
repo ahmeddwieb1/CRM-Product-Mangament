@@ -76,7 +76,7 @@ function createListItem(icon, text, badge = null) {
                 </li>
             `;
 }
-
+// todo summary end point
 // Fetch summary data
 authFetch('/api/dashboard/summary')
     .then(r => r.ok ? r.json() : Promise.reject(r))

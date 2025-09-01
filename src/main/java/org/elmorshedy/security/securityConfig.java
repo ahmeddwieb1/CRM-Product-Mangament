@@ -66,7 +66,9 @@ public class securityConfig {
                         .requestMatchers(
                                 "/", "/index.html", "/auth", "/auth.html", "/dashboard",
                                 "/dashboard.html","/dashboard.js", "/settings", "/settings.html", "/leads",
-                                "/leads.html","/notes.html","/notes.js", "/meetings", "/meetings.html","/meetings.js",
+                                "/leads.html","/product.html","/product.js",
+                                "/notes.html","/notes.js", "/meetings",
+                                "/meetings.html","/meetings.js",
                                 "/styles.css", "/auth.js", "/favicon.ico",
                                 "/static/**", "/assets/**"
                                 ,"/lead.js"
