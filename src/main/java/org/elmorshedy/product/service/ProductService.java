@@ -2,12 +2,12 @@ package org.elmorshedy.product.service;
 
 import org.bson.types.ObjectId;
 import org.elmorshedy.product.model.Product;
+import org.elmorshedy.product.model.ProductDTO;
 import org.elmorshedy.product.model.ProductUpdateRequest;
 import org.elmorshedy.product.repo.ProductRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -17,17 +17,23 @@ public class ProductService {
         this.productRepo = productRepo;
     }
 
-    public Product getProduct(ObjectId id) {
-        return productRepo.findById(id)
+    public ProductDTO getProduct(ObjectId id) {
+        Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        return new ProductDTO(product);
     }
+
     //done
     public Product CreateProduct(Product product) {
         return productRepo.save(product);
     }
+
     //done
-    public List<Product> getAllProducts() {
-        return productRepo.findAll();
+    public List<ProductDTO> getAllProducts() {
+        return productRepo.findAll()
+                .stream()
+                .map(ProductDTO::new)
+                .toList();
     }
 
     public void deleteProduct(ObjectId id) {
@@ -37,28 +43,34 @@ public class ProductService {
         productRepo.deleteById(id);
     }
 
-    public Product editamount(ObjectId id, int amount) {
+    public ProductDTO editamount(ObjectId id, int amount) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
         product.setAmount(amount);
-        return productRepo.save(product);
+        return new ProductDTO(productRepo.save(product));
     }
+
     //done
-    public Product updateProduct(ObjectId id, ProductUpdateRequest product) {
-        Product product1 = productRepo.findById(id)
+    public ProductDTO updateProduct(ObjectId id, ProductUpdateRequest product) {
+        Product existingProduct = productRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
-        if (product1.getDescription() != null) {
-            product1.setDescription(product.getDescription());
+
+        if (product.getDescription() != null) {
+            existingProduct.setDescription(product.getDescription());
         }
-        if (product.getName() != null) {
-            product1.setName(product.getName());
+        if (product.getName() != null && !product.getName().isBlank()) {
+            existingProduct.setName(product.getName());
         }
-        if (product.getPrice() != 0) {
-            product1.setPrice(product.getPrice());
+        if (product.getPrice() != null && product.getPrice() > 0) {
+            existingProduct.setPrice(product.getPrice());
         }
-        if (product.getAmount() != 0) {
-            product1.setAmount(product.getAmount());
+        // تحقّق من null قبل المقارنة للـ amount
+        if (product.getAmount() != null && product.getAmount() >= 0) {
+            existingProduct.setAmount(product.getAmount());
         }
-        return productRepo.save(product1);
+
+        Product saved = productRepo.save(existingProduct);
+        return new ProductDTO(saved);
     }
+
 }
