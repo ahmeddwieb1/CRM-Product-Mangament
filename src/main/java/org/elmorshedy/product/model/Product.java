@@ -1,5 +1,6 @@
 package org.elmorshedy.product.model;
 
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,15 +19,20 @@ public class Product {
     @Id
     private ObjectId id;
 
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private boolean active = true;
-    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Product(String name, String description, BigDecimal price) {
-        this.name = name;
-        this.description = description;
-        this.price = price;
-    }
+    @NotBlank(message = "Product name is required")
+    @Size(min = 2, max = 100, message = "Product name must be between 2 and 100 characters")
+    private String name;
+
+    @Min(value = 0, message = "Amount cannot be negative")
+    private int amount;
+
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    @Digits(integer = 10, fraction = 2, message = "Price must have up to 2 decimal places")
+    private Double price;
+
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
+
 }
