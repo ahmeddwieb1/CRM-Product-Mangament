@@ -1,10 +1,9 @@
 package org.elmorshedy.note.Service;
 
 import org.bson.types.ObjectId;
-import org.elmorshedy.lead.repo.LeadRepo;
+import org.elmorshedy.AI.AiService;
 import org.elmorshedy.note.Repo.NoteRepo;
 import org.elmorshedy.note.Repo.PhoneRepo;
-import org.elmorshedy.note.models.Gender;
 import org.elmorshedy.note.models.Note;
 import org.elmorshedy.note.models.NoteRequest;
 import org.elmorshedy.note.models.Phone;
@@ -17,11 +16,13 @@ import java.util.Optional;
 public class NoteServiceImp implements NoteServices {
     private final NoteRepo noteRepo;
     private final PhoneRepo numberRepo;
+    private final AiService aiService;
 
     @Autowired
-    public NoteServiceImp(NoteRepo noteRepo, LeadRepo leadRepo, PhoneRepo numberRepo) {
+    public NoteServiceImp(NoteRepo noteRepo, PhoneRepo numberRepo, AiService aiService) {
         this.noteRepo = noteRepo;
         this.numberRepo = numberRepo;
+        this.aiService = aiService;
     }
 
     private Note createNoteOp(NoteRequest noteRequest) {
@@ -38,7 +39,7 @@ public class NoteServiceImp implements NoteServices {
     }
 
     public Note createNote(NoteRequest noteRequest) {
-        Note note =createNoteOp(noteRequest);
+        Note note = createNoteOp(noteRequest);
         return noteRepo.save(note);
     }
 
@@ -49,18 +50,8 @@ public class NoteServiceImp implements NoteServices {
     }
 
     public String getReply(NoteRequest noteRequest) {
-        Optional<Phone> number = numberRepo.findByPhone(noteRequest.getPhone());
-
-        if (number.isPresent() && noteRequest.getGender() == Gender.MALE) {
-            return "اخويا الي منورني 🌟";
-        }
-        else if (number.isPresent() && noteRequest.getGender() == Gender.FEMALE) {
-            return "روحي اعملي شاي👋";
-        }
-        else {
-            return "شكرا لزيارتك لموقعي 🙏 ياريت تسيب رأيك.";
-        }
+        boolean exists = numberRepo.findByPhone(noteRequest.getPhone()).isPresent();
+        return aiService.getAiReply(noteRequest.getContent(), exists);
     }
-
 
 }
