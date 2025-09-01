@@ -1,6 +1,7 @@
 package org.elmorshedy.note.Controller;
 
 import org.bson.types.ObjectId;
+import org.elmorshedy.AI.AiService;
 import org.elmorshedy.note.Service.NoteServiceImp;
 import org.elmorshedy.note.models.Note;
 import org.elmorshedy.note.models.NoteRequest;
@@ -9,25 +10,34 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/notes")
 public class NoteController {
 
     private NoteServiceImp noteService;
-
+    private final AiService aiService;
     @Autowired
-    public NoteController(NoteServiceImp noteService) {
+    public NoteController(NoteServiceImp noteService, AiService aiService) {
         this.noteService = noteService;
+        this.aiService = aiService;
     }
 
     @PostMapping
-    public ResponseEntity<?> createnote(@RequestBody NoteRequest noteRequest) {
-        Note createdNote = noteService.createNote(noteRequest);
+    public ResponseEntity<Map<String, Object>> createNote(@RequestBody NoteRequest noteRequest) {
         String reply = noteService.getReply(noteRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(reply);
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Note created successfully");
+        response.put("aiResponse", reply);
+
+        return ResponseEntity.ok(response);
     }
+
 
     @DeleteMapping("/{noteid}")
     public ResponseEntity<Void> deleteNote(@PathVariable ObjectId noteid) {

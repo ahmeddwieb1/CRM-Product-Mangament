@@ -86,22 +86,24 @@ document.getElementById('note-form')
         });
 
         if (res.ok) {
-            const reply = await res.text();
+            const reply = await res.json(); // 👈 هنا بدل text() بخليها json()
+
             msg.innerHTML = `
-                <div style="color: var(--success); margin-bottom: 10px;">
-                    <i class="fas fa-check-circle"></i> Note created successfully!
-                </div>
-                <div style="background: var(--light); 
-                padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary);">
-                    <strong>Reply:</strong> ${reply}
-                </div>
-            `;
+        <div style="color: var(--success); margin-bottom: 10px;">
+            <i class="fas fa-check-circle"></i> ${reply.message}
+        </div>
+        <div style="background: var(--light); 
+        padding: 12px; border-radius: 8px; border-left: 4px solid var(--primary);">
+            <strong>AI Reply:</strong> ${reply.aiResponse}
+        </div>
+    `;
+
 
             // Reset form
             document.getElementById('note-form').reset();
         } else {
-            const error = await res.text();
-            msg.textContent = 'Failed to create note: ' + error;
+            const error = await res.json().catch(() => ({ error: "Unknown error" }));
+            msg.textContent = 'Failed to create note: ' + (error.error || error);
             msg.style.color = 'var(--danger)';
         }
     } catch (e) {
