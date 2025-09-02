@@ -51,7 +51,7 @@ public class NoteServiceImp implements NoteServices {
 
     public String getReply(NoteRequest noteRequest) {
         boolean exists = numberRepo.findByPhone(noteRequest.getPhone()).isPresent();
-        return aiService.getAiReply(noteRequest.getContent(), exists);
+        return aiService.getAiReply(noteRequest.getContent(), exists,noteRequest.getGender());
     }
 
 }

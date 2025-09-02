@@ -32,7 +32,7 @@ public class NoteController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
-        response.put("message", "Note created successfully");
+        response.put("message", "Massage sended successfully");
         response.put("aiResponse", reply);
 
         return ResponseEntity.ok(response);
