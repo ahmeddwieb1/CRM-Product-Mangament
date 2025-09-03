@@ -6,6 +6,7 @@ import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,7 +20,8 @@ public class UserServiceImp implements UserService {
     public UserServiceImp(UserRepo userRepo) {
         this.userRepo = userRepo;
     }
-//todo make role return
+
+    //todo make role return
     @Override
     public List<UserDTO> findAlluser() {
         return userRepo.findAll().stream().map(
@@ -42,8 +44,6 @@ public class UserServiceImp implements UserService {
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-
-    //todo
     @Override
     public User updateUserRole(ObjectId userId, AppRole rolename) {
         User user = userRepo.findById(userId)
@@ -55,4 +55,12 @@ public class UserServiceImp implements UserService {
         user.setRole(role);
         return userRepo.save(user);
     }
+
+    private List<String> selectEmailUser() {
+        return findAlluser().stream()
+                .filter(user -> user.getRole().equals(AppRole.SALES_REP))
+                .map(UserDTO::getEmail)
+                .toList();
+    }
+
 }
