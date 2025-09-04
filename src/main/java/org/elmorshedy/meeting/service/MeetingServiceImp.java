@@ -95,7 +95,7 @@ public class MeetingServiceImp implements MeetingService {
 
     private void validateMeeting(Meeting meeting) {
         if (meeting.getDuration() > 8) {
-            throw new IllegalArgumentException("Duration cannot be more than 2 hours");
+            throw new IllegalArgumentException("Duration cannot be more than 8 hours");
         }
         if (meeting.getDuration() < 0) {
             throw new IllegalArgumentException("Duration cannot be negative");
