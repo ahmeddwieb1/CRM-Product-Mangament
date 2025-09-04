@@ -1,11 +1,29 @@
-### Import Excel File
-POST http://localhost:8080/import-excel
-Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1Njg4Nzk2NywiZXhwIjoxNzU2OTA1MjQ3fQ.eW4zXn2xKoL7X7ee9uwm8q4kq4jCU6igjxG6onwtRZ8CuFY6Z5jAJhsh2zfyeyhl
+POST http://localhost:8080/api/import/excel
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1Njk3MzQ4NiwiZXhwIjoxNzU2OTkwNzY2fQ.o2YfO-HPGyaozj61B7iNjZW9m93STKmB3z0Vr7y-RfdPZE2y325Cl_hflfIKjDxa
+Content-Type: multipart/form-data; charset=UTF-8
+
+file=@C:\Users\ahmed\Downloads\products.xlsx
+
+
+### Import Excel
+POST http://localhost:8080/api/import/excel
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1Njk3MzQ4NiwiZXhwIjoxNzU2OTkwNzY2fQ.o2YfO-HPGyaozj61B7iNjZW9m93STKmB3z0Vr7y-RfdPZE2y325Cl_hflfIKjDxa
+Content-Type: multipart/form-data
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="products.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< C:\Users\ahmed\Downloads\products.xlsx
+--boundary--
+### Import Excel
+POST http://localhost:8080/api/import/excel
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1Njk3MzQ4NiwiZXhwIjoxNzU2OTkwNzY2fQ.o2YfO-HPGyaozj61B7iNjZW9m93STKmB3z0Vr7y-RfdPZE2y325Cl_hflfIKjDxa
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="products.xlsx"
 Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 
-< C:\Users\ahmed\Downloads\products.xlsx
+< C:/Users/ahmed/Downloads/products.xlsx
 --WebAppBoundary--
