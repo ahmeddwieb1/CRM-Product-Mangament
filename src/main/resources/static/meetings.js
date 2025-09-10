@@ -379,6 +379,28 @@ class Meetings {
             }, 3000);
         }
     }
+    static renderNotesList(notes) {
+        const notesList = document.getElementById('notes-list');
+        notesList.innerHTML = '';
+
+        if (notes && notes.length > 0) {
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerHTML = `
+                    <span>${note}</span>
+                    <div class="note-actions">
+                        <button class="note-delete" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                notesList.appendChild(noteItem);
+            });
+        } else {
+            notesList.innerHTML = '<div class="muted">No notes</div>';
+        }
+    }
 
     static async loadMeetingForEdit(meetingId) {
         try {
@@ -412,29 +434,6 @@ class Meetings {
         } catch (e) {
             console.error('Error loading meeting for edit:', e);
             alert('Failed to load meeting details');
-        }
-    }
-
-    static renderNotesList(notes) {
-        const notesList = document.getElementById('notes-list');
-        notesList.innerHTML = '';
-
-        if (notes && notes.length > 0) {
-            notes.forEach(note => {
-                const noteItem = document.createElement('div');
-                noteItem.className = 'note-item';
-                noteItem.innerHTML = `
-                    <span>${note}</span>
-                    <div class="note-actions">
-                        <button class="note-delete" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                notesList.appendChild(noteItem);
-            });
-        } else {
-            notesList.innerHTML = '<div class="muted">No notes</div>';
         }
     }
 

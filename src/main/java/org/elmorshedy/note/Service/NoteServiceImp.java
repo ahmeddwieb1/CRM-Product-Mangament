@@ -1,6 +1,5 @@
 package org.elmorshedy.note.Service;
 
-import org.bson.types.ObjectId;
 import org.elmorshedy.AI.AiService;
 import org.elmorshedy.note.Repo.NoteRepo;
 import org.elmorshedy.note.Repo.PhoneRepo;
@@ -38,20 +37,19 @@ public class NoteServiceImp implements NoteServices {
         return note;
     }
 
-    public Note createNote(NoteRequest noteRequest) {
+    public void createNote(NoteRequest noteRequest, String reply ) {
         Note note = createNoteOp(noteRequest);
-        return noteRepo.save(note);
+        note.setReply(reply);
+        noteRepo.save(note);
     }
 
 
     @Override
-    public void deleteById(ObjectId noteid) {
-        noteRepo.deleteById(noteid);
-    }
-
     public String getReply(NoteRequest noteRequest) {
         boolean exists = numberRepo.findByPhone(noteRequest.getPhone()).isPresent();
-        return aiService.getAiReply(noteRequest.getContent(), exists,noteRequest.getGender());
+        String reply =aiService.getAiReply(noteRequest.getContent(), exists,noteRequest.getGender());
+        createNote(noteRequest,reply);
+        return reply;
     }
 
 }

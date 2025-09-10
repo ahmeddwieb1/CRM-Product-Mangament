@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,28 +42,49 @@ public class MeetingServiceImp implements MeetingService {
         meeting.setTime(request.getTime());
         meeting.setDuration(request.getDuration());
         meeting.setType(request.getType());
-        meeting.setStatus(request.getStatus());
         meeting.setLocation(request.getLocation());
+        meeting.setStatus(request.getStatus());
 
         if (request.getNotes() != null) {
             meeting.setNotes(request.getNotes());
         }
 
         if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
-            throw new RuntimeException("Client not found with ID: " + request.getClientId());
+            throw new NoSuchElementException("Client not found with ID: " + request.getClientId());
         }
         meeting.setClientId(new ObjectId(request.getClientId()));
 
         if (!userRepo.existsById(new ObjectId(request.getAssignedToId()))) {
-            throw new RuntimeException("User not found with ID: " + request.getAssignedToId());
+            throw new NoSuchElementException("User not found with ID: " + request.getAssignedToId());
         }
         meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
 
         return meeting;
     }
 
+    private void validateMeeting(Meeting meeting) {
+        if (meeting.getDuration() > 8) {
+            throw new IllegalArgumentException("Duration cannot be more than 8 hours");
+        }
+        if (meeting.getDuration() < 0) {
+            throw new IllegalArgumentException("Duration cannot be negative");
+        }
+
+        LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getDate(), meeting.getTime());
+
+        if (meeting.getStatus().equals(Status.SCEDULED) && meetingDateTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Scheduled meeting must be set in the future");
+        }
+
+        if (meeting.getStatus().equals(Status.COMPLETED) && meetingDateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Completed meeting must be set in the past");
+        }
+    }
+
+    @Transactional
     @Override
     public MeetingDTO addMeeting(MeetingRequest request) {
+
         Meeting meeting = createMeetingFromRequest(request);
 
         validateMeeting(meeting);
@@ -81,31 +103,23 @@ public class MeetingServiceImp implements MeetingService {
 
     public MeetingDTO getMeetingById(ObjectId id) {
         Meeting meeting = meetingRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + id));
         return meetingMapper.toDTO(meeting);
     }
 
     @Override
     public void deleteMeeting(ObjectId meetingId) {
         Meeting meeting = meetingRepo.findById(meetingId)
-                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + meetingId));
-        meetingRepo.delete(meeting);
+                .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + meetingId));
+        if (!meeting.getStatus().equals(Status.SCEDULED)) {
+            meetingRepo.delete(meeting);
+        }else {
+            throw new IllegalStateException("Cannot delete a scheduled meeting with ID: " + meetingId);
+
+        }
         log.info("Deleting meeting: {}", meeting.getTitle());
     }
 
-    private void validateMeeting(Meeting meeting) {
-        if (meeting.getDuration() > 8) {
-            throw new IllegalArgumentException("Duration cannot be more than 8 hours");
-        }
-        if (meeting.getDuration() < 0) {
-            throw new IllegalArgumentException("Duration cannot be negative");
-        }
-        LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getDate(), meeting.getTime());
-
-        if (meetingDateTime.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Meeting date/time cannot be in the past");
-        }
-    }
 
 //    public List<MeetingDTO> getMeetingsByUser(String userId) {
 //        return meetingRepo.findByAssignedToId(userId)
@@ -118,14 +132,9 @@ public class MeetingServiceImp implements MeetingService {
     public MeetingDTO updateMeeting(ObjectId meetingId, MeetingRequest request) {
         // 1. جيب الـ Meeting الحالية
         Meeting updatemeeting = meetingRepo.findById(meetingId)
-                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + meetingId));
-        System.out.println("Incoming Request: " + request);
-        System.out.println("updatemeeting: " + updatemeeting);
-
-        // 2. apply التحديثات
+                .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + meetingId));
         applyUpdatesToMeeting(request, updatemeeting);
-        System.out.println("updatemeeting: " + updatemeeting);
-        // 3. validate البيانات بعد التحديث
+
         validateMeeting(updatemeeting);
 
         Meeting saved = meetingRepo.save(updatemeeting);
@@ -133,9 +142,9 @@ public class MeetingServiceImp implements MeetingService {
     }
 
     @Transactional
-    public MeetingDTO  addNoteToMeeting(ObjectId meetingId, String noteContent) {
+    public MeetingDTO addNoteToMeeting(ObjectId meetingId, String noteContent) {
         Meeting meeting = meetingRepo.findById(meetingId)
-                .orElseThrow(() -> new RuntimeException("Meeting not found"));
+                .orElseThrow(() -> new NoSuchElementException("Meeting not found"));
 
         if (meeting.getNotes() == null) {
             meeting.setNotes(new ArrayList<>());
@@ -175,14 +184,14 @@ public class MeetingServiceImp implements MeetingService {
 
         if (request.getClientId() != null) {
             if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
-                throw new RuntimeException("Client not found");
+                throw new NoSuchElementException("Client not found");
             }
             meeting.setClientId(new ObjectId(request.getClientId()));
         }
 
         if (request.getAssignedToId() != null) {
             if (!userRepo.existsById(new ObjectId(request.getAssignedToId()))) {
-                throw new RuntimeException("User not found");
+                throw new NoSuchElementException("User not found");
             }
             meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
         }
@@ -190,14 +199,14 @@ public class MeetingServiceImp implements MeetingService {
 
     public MeetingDTO deleteNoteFromMeeting(ObjectId id, String content) {
         Meeting meeting = meetingRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Meeting not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + id));
         if (meeting.getNotes() == null || meeting.getNotes().isEmpty()) {
-            throw new RuntimeException("Meeting has no notes to delete");
+            throw new IllegalArgumentException("Meeting has no notes to delete");
         }
         boolean remove = meeting.getNotes().removeIf(note -> note.equals(content));
 
         if (!remove) {
-            throw new RuntimeException("Note not found in meeting");
+            throw new IllegalArgumentException("Note not found in meeting");
         }
         Meeting updated = meetingRepo.save(meeting);
         return meetingMapper.toDTO(updated);

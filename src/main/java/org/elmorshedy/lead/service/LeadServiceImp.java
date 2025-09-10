@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,7 @@ public class LeadServiceImp implements LeadService {
         validateLeadRequest(leadRequest);
 
         User currentUser = userRepo.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Current user not found"));
+                .orElseThrow(() -> new NoSuchElementException("Current user not found"));
 
         Lead lead = createLeadFromRequest(leadRequest);
 
@@ -60,12 +61,46 @@ public class LeadServiceImp implements LeadService {
         return leadMapper.toDTO(savedLead);
     }
 
-    //note for me
-//todo: make sure in username must be uniqe
-//todo i forget in sign up any one when sign up he give
-// role by defult Sales_Rupe this wrong shold people admin add have role any one else don't have role or
-// it should be only user or make this system depend on only employee and this the base of this project
+    private Lead createLeadFromRequest(RequestLead request) {
+        Lead lead = new Lead();
+        lead.setLeadName(request.getLeadName());
+        lead.setPhone(request.getPhone());
+        lead.setBudget(request.getBudget());
+        lead.setLeadStatus(request.getLeadStatus());
+        lead.setLeadSource(request.getLeadSource());
+        if (request.getNotes() != null)
+            lead.setNotes(request.getNotes());
+        return lead;
+    }
 
+    private void assignLeadToUser(Lead lead, User currentUser, RequestLead request) {
+        if (isAdmin(currentUser) && request.getAssignedToId() != null) {
+            User assignedTo = userRepo.findById(new ObjectId(request.getAssignedToId()))
+                    .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + request.getAssignedToId()));
+            lead.setAssignedToId(assignedTo.getId());
+        } else {
+            lead.setAssignedToId(currentUser.getId());
+        }
+    }
+
+    private void validateLeadRequest(RequestLead request) {
+        if (leadRepo.existsByPhone(request.getPhone())) {
+            throw new IllegalArgumentException("Lead with this phone already exists");
+        }
+
+        if (request.getAssignedToId() != null && !request.getAssignedToId().isEmpty()) {
+            try {
+                ObjectId assignedToObjectId = new ObjectId(request.getAssignedToId());
+
+                if (!userRepo.existsById(assignedToObjectId)) {
+                    throw new NoSuchElementException("User with id " + request.getAssignedToId() + " not found");
+                }
+
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid user ID format: " + request.getAssignedToId());
+            }
+        }
+    }
 //لو user have lead
 //    @Override
 //    public List<Lead> getLeadsByUserid(ObjectId id) {
@@ -75,9 +110,9 @@ public class LeadServiceImp implements LeadService {
     @Override
     public LeadDTO updateLead(ObjectId id, RequestLead leadRequest, String currentUsername) {
         User currentUser = userRepo.findByUsername(currentUsername)
-                .orElseThrow(() -> new RuntimeException("Current user not found"));
+                .orElseThrow(() -> new NoSuchElementException("Current user not found"));
         Lead lead = leadRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Lead not found"));
+                .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         Lead updatelead = updateLeadFromRequest(leadRequest, lead);
 
@@ -86,9 +121,10 @@ public class LeadServiceImp implements LeadService {
         Lead savedLead = leadRepo.save(updatelead);
         return leadMapper.toDTO(savedLead);
     }
+
     public LeadDTO updateLeadStatus(ObjectId id, RequestLead leadRequest) {
         Lead lead = leadRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Lead not found"));
+                .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         if (leadRequest.getLeadStatus() != null) {
             lead.setLeadStatus(leadRequest.getLeadStatus());
@@ -100,7 +136,7 @@ public class LeadServiceImp implements LeadService {
     @Override
     public void deleteLead(ObjectId id) {
         if (!leadRepo.existsById(id)) {
-            throw new RuntimeException("Lead not found with id: " + id);
+            throw new IllegalArgumentException("Lead not found with id: " + id);
         }
         leadRepo.deleteById(id);
     }
@@ -108,36 +144,35 @@ public class LeadServiceImp implements LeadService {
     @Override
     public LeadDTO addNoteToLead(ObjectId leadId, String noteContent){
         Lead lead = leadRepo.findById(leadId)
-                .orElseThrow(() -> new RuntimeException("Lead not found"));
+                .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         if (lead.getNotes() == null) {
             lead.setNotes(new ArrayList<>());
         }
 
         lead.getNotes().add(noteContent);
-        Lead updated = leadRepo.save(lead);
 
+        Lead updated = leadRepo.save(lead);
         return leadMapper.toDTO(updated);
     }
 
     @Override
     public LeadDTO deleteNoteFromLead(ObjectId id, String content) {
         Lead lead = leadRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Lead not found with ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Lead not found with ID: " + id));
         if (lead.getNotes() == null || lead.getNotes().isEmpty()) {
-            throw new RuntimeException("Lead has no notes to delete");
+            throw new IllegalArgumentException("Lead has no notes to delete");
         }
         boolean remove = lead.getNotes().removeIf(note -> note.equals(content));
 
         if (!remove) {
-            throw new RuntimeException("Note not found in Lead");
+            throw new NoSuchElementException("Note not found in Lead");
         }
         Lead updated = leadRepo.save(lead);
         return leadMapper.toDTO(updated);
     }
 
     private Lead updateLeadFromRequest(RequestLead requestLead, Lead lead) {
-        //todo  update phone
         if (requestLead.getLeadName() != null) {
             lead.setLeadName(requestLead.getLeadName());
         }
@@ -156,7 +191,6 @@ public class LeadServiceImp implements LeadService {
         if (requestLead.getPhone() != null && !requestLead.getPhone().trim().isEmpty()) {
             String newPhone = requestLead.getPhone().trim();
 
-            // التحقق من أن رقم الهاتف يحتوي على أرقام فقط
             if (!newPhone.matches("^[0-9]+$")) {
                 throw new IllegalArgumentException("Phone number must contain only digits");
             }
@@ -176,43 +210,7 @@ public class LeadServiceImp implements LeadService {
         return lead;
     }
 
-    private Lead createLeadFromRequest(RequestLead request) {
-        Lead lead = new Lead();
-        lead.setLeadName(request.getLeadName());
-        lead.setPhone(request.getPhone());
-        lead.setBudget(request.getBudget());
-        lead.setLeadStatus(request.getLeadStatus());
-        lead.setLeadSource(request.getLeadSource());
-        if (request.getNotes() != null)
-            lead.setNotes(request.getNotes());
-        return lead;
-    }
 
-    private void assignLeadToUser(Lead lead, User currentUser, RequestLead request) {
-        if (isAdmin(currentUser) && request.getAssignedToId() != null) {
-            User assignedTo = userRepo.findById(new ObjectId(request.getAssignedToId()))
-                    .orElseThrow(() -> new RuntimeException("Current user not found"));
-            lead.setAssignedToId(assignedTo.getId());
-        } else {
-            lead.setAssignedToId(currentUser.getId());
-        }
-    }
-
-    private void validateLeadRequest(RequestLead request) {
-        if (leadRepo.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("LEAD_EXISTS Lead with this phone already exists");
-        }
-        if (request.getAssignedToId() != null && !request.getAssignedToId().isEmpty()) {
-            try {
-                ObjectId assignedToObjectId = new ObjectId(request.getAssignedToId());
-                if (!userRepo.existsById(assignedToObjectId)) {
-                    throw new RuntimeException("USER_NOT_FOUND User with id " + request.getAssignedToId() + " not found");
-                }
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("INVALID_USER_ID Invalid user ID format: " + request.getAssignedToId());
-            }
-        }
-    }
 
     private boolean isAdmin(User user) {
         return user.getRole().getRolename().equals(AppRole.ROLE_ADMIN);
