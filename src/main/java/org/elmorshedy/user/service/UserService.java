@@ -14,6 +14,11 @@ public interface UserService {
 
     User findByUsername(String username);
 
+
+    void deleteUser(ObjectId userId);
+
+    UserDTO updateuser(ObjectId userId, User user);
+
 //    UserDTO getUser(ObjectId userId);
 
 //    UserInfoResponse addUser (SignupRequest signupRequest);
