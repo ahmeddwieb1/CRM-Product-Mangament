@@ -332,6 +332,87 @@ async function readError(res) {
         }
     }
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const excelForm  = document.getElementById('excelForm');
+    const excelFile  = document.getElementById('excelFile');
+    const uploadBtn  = document.getElementById('excelBtn');
+    const resultEl   = document.getElementById('uploadResult');
+
+    if (excelForm) {
+        excelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!excelFile.files.length) {
+                alert('Please select an Excel file first!');
+                return;
+            }
+
+            // (اختياري) فِلتر حجم الملف قبل الإرسال – مثال 20MB
+            const maxSize = 20 * 1024 * 1024;
+            if (excelFile.files[0].size > maxSize) {
+                resultEl.textContent = '❌ File is too large (max 20MB).';
+                resultEl.style.color = 'var(--danger)';
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append('file', excelFile.files[0]); // الاسم "file" لازم يطابق @RequestParam("file")
+
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<div class="loading"></div> Uploading...';
+            resultEl.textContent = '';
+            resultEl.style.color = '';
+
+            try {
+                // استخدم authFetch عشان Authorization يتحط تلقائيًا
+                const res = await authFetch('/api/import/excel', {
+                    method: 'POST',
+                    body: fd
+                });
+
+                // اقرأ البودي مرة واحدة فقط (JSON لو متاح، وإلا نص)
+                const ct = res.headers.get('content-type') || '';
+                const payload = ct.includes('application/json')
+                    ? await res.json()
+                    : await res.text();
+
+                if (!res.ok) {
+                    const message = typeof payload === 'string'
+                        ? payload
+                        : (payload.message || 'Upload failed');
+                    throw new Error(message);
+                }
+
+                // لو السيرفر راجع JSON بالحقول دي
+                if (typeof payload === 'object') {
+                    const imported = payload.importedProducts ?? 0;
+                    const sent     = Array.isArray(payload.emailsSentTo) ? payload.emailsSentTo.join(', ') : '—';
+                    const failed   = Array.isArray(payload.failedEmails) ? payload.failedEmails.join(', ') : '—';
+
+                    resultEl.textContent =
+                        `✅ Imported Products: ${imported}\n` +
+                        `📧 Emails Sent: ${sent}\n` +
+                        `❌ Failed Emails: ${failed}`;
+                } else {
+                    // fallback لو السيرفر رجّع نص
+                    resultEl.textContent = `✅ ${payload}`;
+                }
+
+                // نظّف الفورم وحمّل المنتجات تاني
+                excelForm.reset();
+                await loadProducts();
+
+            } catch (err) {
+                console.error('Upload failed:', err);
+                resultEl.textContent = `❌ ${err.message || 'Upload failed'}`;
+                resultEl.style.color = 'var(--danger)';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = 'Upload';
+            }
+        });
+    }
+});
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function () {

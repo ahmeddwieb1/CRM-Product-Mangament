@@ -114,18 +114,7 @@ public class ImportAndNotifyController {
                 "emailsSentTo", salesEmails
         ));
     }
-//    @PostMapping("/excel")
-//    public ResponseEntity<String> importExcel(@RequestParam("file") MultipartFile file) {
-//        try {
-//            if (file.isEmpty()) {
-//                return ResponseEntity.badRequest().body("File is empty");
-//            }
-//            return ResponseEntity.ok("File uploaded: " + file.getOriginalFilename());
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body("Error: " + e.getMessage());
-//        }
-//    }
+
 
     private List<String> selectSalesEmails() {
         return findAlluser().stream()
