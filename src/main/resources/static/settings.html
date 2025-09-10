@@ -7,116 +7,327 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            margin: 0;
-            font-family: Inter, system-ui, Arial, sans-serif;
-            background: #f7f9fc;
-            color: #0f172a
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #1e2a38;
+            --gray: #64748b;
+            --light-gray: #f1f5f9;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 12px rgba(2, 6, 23, 0.08);
+            --header-shadow: 0 2px 8px rgba(2, 6, 23, 0.06);
         }
 
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--light-gray);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Top Navigation */
         .top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 22px;
+            padding: 16px 24px;
             background: #fff;
-            box-shadow: 0 1px 0 rgba(2, 6, 23, .06)
+            box-shadow: var(--header-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .brand {
-            font-weight: 800
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        a.nav {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            margin-right: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        a.nav:hover {
+            background: var(--light);
+            color: var(--primary);
         }
 
         .btn {
             appearance: none;
             border: 0;
-            background: #ef4444;
+            background: var(--danger);
             color: #fff;
-            padding: 10px 14px;
+            padding: 10px 16px;
             border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #e10f5a;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+
+        .btn-icon {
+            padding: 8px;
+            background: var(--light);
+            border-radius: 8px;
+            color: var(--dark);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
         }
 
         .wrap {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 30px auto;
-            padding: 0 20px
+            padding: 0 20px;
         }
 
+        /* Cards */
         .card {
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(2, 6, 23, .06);
-            padding: 22px
+            box-shadow: var(--card-shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .muted {
-            color: #64748b
+            color: var(--gray);
+            font-size: 0.9rem;
         }
 
+        /* Grid Layout */
         .grid {
             display: grid;
-            grid-template-columns:300px 1fr;
-            gap: 16px
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
         }
 
         .list {
-            border-right: 1px solid rgba(2, 6, 23, .08);
-            padding-right: 12px;
+            border-right: 1px solid var(--border);
+            padding-right: 16px;
             max-height: 60vh;
-            overflow: auto
+            overflow: auto;
         }
 
+        /* User List */
         .user-item {
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .user-item:hover {
-            background: #f1f5f9
+            background: var(--light);
+            border-color: var(--primary);
         }
 
         .user-item.active {
-            background: #e2e8f0
+            background: var(--light);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
+        .user-info {
+            flex: 1;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Key-Value Layout */
         .kv {
             display: grid;
-            grid-template-columns:160px 1fr;
-            gap: 8px
+            grid-template-columns: 140px 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
-        a.nav {
-            margin-right: 12px
+        .kv strong {
+            color: var(--dark);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        input, select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(67, 97, 238, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .list {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-right: 0;
+                padding-bottom: 20px;
+            }
         }
     </style>
 </head>
 <body>
 <header class="top">
-    <div class="brand">MyApp</div>
-    <div>
-        <a class="nav" href="/meetings.html">meetings</a>
-        <a class="nav" href="/leads.html">Leads</a>
-        <a class="nav" href="/dashboard.html">Dashboard</a>
+    <div class="brand">
+        <i class="fas fa-chart-line"></i>
+        <span>MyApp</span>
+    </div>
+    <div class="nav-container">
+        <a class="nav" href="/dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="nav" href="/product.html"><i class="fas fa-box"></i> Product</a>
+        <a class="nav" href="/leads.html"><i class="fas fa-users"></i> Leads</a>
+        <a class="nav active" href="/meetings.html"><i class="fas fa-video"></i> Meetings</a>
+        <a class="nav" href="/settings.html"><i class="fas fa-cog"></i> Settings</a>
+    </div>
+    <div class="user-info">
         <span id="welcome" class="muted"></span>
-        <button class="btn" id="logout">Logout</button>
+        <button class="btn" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
     </div>
 </header>
 <main class="wrap">
     <div class="card" style="margin-bottom:16px">
         <h2>Settings</h2>
         <p class="muted">Manage your account and users.</p>
-        <div>Signed in as <strong id="me-username"></strong> — Roles: <strong id="me-roles"></strong></div>
+        <div>Signed in as <strong id="me-username"></strong></div>
     </div>
 
     <div class="card">
         <div class="grid">
             <section>
                 <h3>Users</h3>
-                <p class="muted" id="users-hint">List of users (admin only)</p>
+                <p class="muted" id="users-hint">List of users </p>
                 <div id="users" class="list"></div>
                 <hr style="margin:12px 0;border:0;border-top:1px solid rgba(2,6,23,.08)"/>
                 <h4>Add user</h4>
@@ -131,157 +342,68 @@
                                style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
                         <input id="au-confirm" type="password" placeholder="Confirm password" required
                                style="padding:8px;border:1px solid #cbd5e1;border-radius:8px"/>
-                        <button class="btn" id="au-btn" type="submit">Add User</button>
+                        <button class="btn btn-primary" id="au-btn" type="submit">Add User</button>
                         <div id="au-msg" class="muted"></div>
                     </div>
                 </form>
             </section>
             <section>
-                <!--todo-->
-                <h3>Sales details</h3>
-                <div id="details" class="muted">Select a Sales to view details</div>
+                <div class="item-header">
+                    <h3>User Details</h3>
+                    <div class="action-buttons" id="detail-actions" style="display: none;">
+                        <button class="btn-icon" id="edit-user-btn" title="Edit User">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" id="-user-btn" title="Delete User" style="color: var(--danger);">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="details" class="muted">Select a user to view details</div>
             </section>
         </div>
     </div>
 </main>
-<script>
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('username') || 'User';
-    const rolesStr = localStorage.getItem('roles') || '[]';
 
-    function isLikelyJwt(t) {
-        return typeof t === 'string' && t.split('.').length === 3
-    }
+<!-- Edit User Modal -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit User</h2>
+            <button class="modal-close" id="close-edit-modal">&times;</button>
+        </div>
 
-    if (!isLikelyJwt(token)) {
-        localStorage.removeItem('token');
-        window.location.href = '/auth.html';
-    }
-    let rolesList;
-    try {
-        rolesList = JSON.parse(rolesStr);
-    } catch (e) {
-        rolesList = Array.isArray(rolesStr) ? rolesStr : [rolesStr];
-    }
+        <form id="edit-user-form">
+            <input type="hidden" id="edit-id">
 
-    document.getElementById('welcome').textContent = 'Welcome, ' + user;
-    document.getElementById('me-username').textContent = user;
+            <div class="row">
+                <div>
+                    <input id="edit-username" placeholder="Username" required>
+                </div>
+                <div>
+                    <input type="email" id="edit-email" placeholder="Email" required>
+                </div>
+            </div>
 
-    // todo
-    document.getElementById('me-roles').textContent = Array.isArray(rolesList) ? rolesList.join(', ') : rolesList;
-    document.getElementById('logout').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        localStorage.removeItem('roles');
-        window.location.href = '/auth.html';
-    });
+            <div class="row">
+                <div>
+                    <input type="password" id="edit-password" placeholder="New Password (leave empty to keep current)">
+                </div>
+            </div>
 
-    const authHeaders = {'Authorization': 'Bearer ' + token};
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update User
+                </button>
+                <button type="button" class="btn" id="cancel-edit">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+            <div id="edit-user-msg" class="muted" style="margin-top: 12px;"></div>
+        </form>
+    </div>
+</div>
 
-    function authFetch(url, options = {}) {
-        const headers = Object.assign({}, options.headers || {}, authHeaders);
-        return fetch(url, {...options, headers});
-    }
-
-    const usersEl = document.getElementById('users');
-    const detailsEl = document.getElementById('details');
-
-    // todo
-    function renderDetails(u) {
-        if (!u) {
-            detailsEl.innerHTML = '<span class="muted">Select a Sales to view details</span>';
-            return;
-        }
-        const role = (u.role && (u.role.rolename || u.role.name)) || 'N/A';
-        detailsEl.classList.remove('muted');
-        detailsEl.innerHTML = `
-      <div class="kv">
-        <div>Username</div><div><strong>${u.username || ''}</strong></div>
-        <div>Email</div><div>${u.email || ''}</div>
-        <div>Role</div><div>${role}</div>
-      </div>
-    `;
-    }
-
-    function renderList(users) {
-        if (!users || users.length === 0) {
-            usersEl.innerHTML = '<span class="muted">No users</span>';
-            renderDetails(null);
-            return;
-        }
-        usersEl.innerHTML = '';
-        users.forEach((u, idx) => {
-            const item = document.createElement('div');
-            item.className = 'user-item' + (idx === 0 ? ' active' : '');
-            item.textContent = `${u.username} ${u.email ? '(' + u.email + ')' : ''}`;
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-                renderDetails(u);
-            });
-            usersEl.appendChild(item);
-        });
-        renderDetails(users[0]);
-    }
-
-    authFetch('/api/admin')
-        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject({status: r.status, text: t})))
-        .then(renderList)
-        .catch(err => {
-            usersEl.innerHTML = (err && err.status === 403)
-                ? '<span class="muted">Forbidden: Admins only</span>'
-                : '<span class="muted">Failed to load users</span>';
-            detailsEl.innerHTML = '<span class="muted">No Sales selected</span>';
-        });
-
-    // Add user submit
-    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const msg = document.getElementById('au-msg');
-        msg.textContent = '';
-        const username = document.getElementById('au-username').value.trim();
-        const email = document.getElementById('au-email').value.trim();
-        const password = document.getElementById('au-password').value;
-        const confirm = document.getElementById('au-confirm').value;
-        if (!username || !email || !password) {
-            msg.textContent = 'Please fill all fields';
-            return;
-        }
-        if (password.length < 6) {
-            msg.textContent = 'Password must be at least 6 characters';
-            return;
-        }
-        if (password !== confirm) {
-            msg.textContent = 'Passwords do not match';
-            return;
-        }
-        const btn = document.getElementById('au-btn');
-        btn.disabled = true;
-        btn.textContent = 'Adding...';
-        try {
-            const res = await fetch('/api/auth/public/signup', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, email, password})
-            });
-            if (!res.ok) {
-                const t = await res.json().catch(() => ({message: 'Failed to add user'}));
-                throw new Error(t.message || 'Failed to add user');
-            }
-            msg.textContent = 'User added successfully';
-            document.getElementById('add-user-form').reset();
-            // refresh users
-            authFetch('/api/admin')
-                .then(r => r.ok ? r.json() : [])
-                .then(renderList)
-                .catch(() => {
-                });
-        } catch (err) {
-            msg.textContent = err.message || 'Failed to add user';
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Add User';
-        }
-    });
-</script>
+<script src="/settings.js"></script>
 </body>
 </html>
