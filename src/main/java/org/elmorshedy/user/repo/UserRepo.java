@@ -6,12 +6,17 @@ import jakarta.validation.constraints.Size;
 import org.bson.types.ObjectId;
 import org.elmorshedy.user.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepo extends MongoRepository<User, ObjectId> {
 
     Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmail(String email);
 
     boolean existsByUsername(String username);
 

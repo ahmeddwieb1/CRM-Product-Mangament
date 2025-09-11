@@ -1,7 +1,6 @@
 package org.elmorshedy.user.service;
 
 import org.bson.types.ObjectId;
-import org.elmorshedy.meeting.model.Meeting;
 import org.elmorshedy.user.model.*;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -38,12 +38,12 @@ public class UserServiceImp implements UserService {
     @Override
     public User findByUsername(String username) {
         Optional<User> user = userRepo.findByUsername(username);
-        return user.orElseThrow(() -> new RuntimeException("User not found"));
+        return user.orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     public User findById(ObjectId id) {
         Optional<User> user = userRepo.findById(id);
-        return user.orElseThrow(() -> new RuntimeException("User not found"));
+        return user.orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
     @Override

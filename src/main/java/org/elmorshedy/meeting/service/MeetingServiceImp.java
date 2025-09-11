@@ -72,7 +72,7 @@ public class MeetingServiceImp implements MeetingService {
 
         LocalDateTime meetingDateTime = LocalDateTime.of(meeting.getDate(), meeting.getTime());
 
-        if (meeting.getStatus().equals(Status.SCEDULED) && meetingDateTime.isBefore(LocalDateTime.now())) {
+        if (meeting.getStatus().equals(Status.SCHEDULED) && meetingDateTime.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Scheduled meeting must be set in the future");
         }
 
@@ -111,7 +111,7 @@ public class MeetingServiceImp implements MeetingService {
     public void deleteMeeting(ObjectId meetingId) {
         Meeting meeting = meetingRepo.findById(meetingId)
                 .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + meetingId));
-        if (!meeting.getStatus().equals(Status.SCEDULED)) {
+        if (!meeting.getStatus().equals(Status.SCHEDULED)) {
             meetingRepo.delete(meeting);
         }else {
             throw new IllegalStateException("Cannot delete a scheduled meeting with ID: " + meetingId);

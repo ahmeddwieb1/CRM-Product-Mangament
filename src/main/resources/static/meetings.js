@@ -104,14 +104,21 @@ class Meetings {
                         editSelect.appendChild(editOpt);
                     }
                 });
-            } else {
-                console.error("Failed to load leads");
+
+                // إضافة هذا الجزء - تحديث الـ dropdown إذا كان فيه meeting محمل
+                if (window.currentMeeting && window.currentMeeting.clientId) {
+                    setTimeout(() => {
+                        document.getElementById('edit-clientId').value = window.currentMeeting.clientId;
+                    }, 100);
+                }
+
+                return leads;
             }
         } catch (e) {
             console.error("Error loading leads", e);
         }
+        return [];
     }
-
     static async loadUsers() {
         const select = document.getElementById('mf-assignedTo');
         const editSelect = document.getElementById('edit-assignedTo');
@@ -138,6 +145,11 @@ class Meetings {
 
                 if (this.me.id && users.some(u => u.id === this.me.id)) {
                     select.value = this.me.id;
+                }
+                if (window.currentMeeting && window.currentMeeting.assignedToId) {
+                    setTimeout(() => {
+                        document.getElementById('edit-assignedTo').value = window.currentMeeting.assignedToId;
+                    }, 100);
                 }
             } else {
                 this.setCurrentUserAsDefault(select);
@@ -219,7 +231,7 @@ class Meetings {
 
     static getStatusBadgeClass(status) {
         switch (status) {
-            case 'SCEDULED':
+            case 'SCHEDULED':
                 return 'badge-info';
             case 'COMPLETED':
                 return 'badge-success';
@@ -287,7 +299,7 @@ class Meetings {
                 <strong>Notes:</strong>
                 <div>
                     ${Array.isArray(meeting.notes) && meeting.notes.length > 0 ?
-            meeting.notes.map(note => `
+            meeting.notes.map(note => `    
                             <div class="note-item">
                                 <span>${note}</span>
                                 <div class="note-actions">
@@ -379,6 +391,7 @@ class Meetings {
             }, 3000);
         }
     }
+
     static renderNotesList(notes) {
         const notesList = document.getElementById('notes-list');
         notesList.innerHTML = '';
@@ -401,14 +414,16 @@ class Meetings {
             notesList.innerHTML = '<div class="muted">No notes</div>';
         }
     }
-
     static async loadMeetingForEdit(meetingId) {
         try {
             const res = await this.authFetch(`/api/meetings/${meetingId}`);
             if (res.ok) {
                 const meeting = await res.json();
 
-                // Fill the edit form
+                // حفظ البيانات مؤقتاً
+                window.currentMeeting = meeting;
+
+                // Fill basic fields
                 document.getElementById('edit-id').value = meeting.id;
                 document.getElementById('edit-title').value = meeting.title || '';
                 document.getElementById('edit-date').value = meeting.date || '';
@@ -418,11 +433,11 @@ class Meetings {
                 document.getElementById('edit-status').value = meeting.status || '';
                 document.getElementById('edit-location').value = meeting.location || '';
 
-                // Load clients and users for dropdowns
+                // Load dropdowns and wait for them to complete
                 await this.loadLeads();
                 await this.loadUsers();
 
-                // Set selected values
+                // Set values after dropdowns are loaded
                 document.getElementById('edit-clientId').value = meeting.clientId || '';
                 document.getElementById('edit-assignedTo').value = meeting.assignedToId || '';
 
@@ -430,14 +445,15 @@ class Meetings {
                 this.renderNotesList(meeting.notes || []);
 
                 this.openEditModal();
+
+                // تنظيف البيانات المؤقتة بعد ثانية
+                setTimeout(() => delete window.currentMeeting, 1000);
             }
         } catch (e) {
             console.error('Error loading meeting for edit:', e);
             alert('Failed to load meeting details');
         }
-    }
-
-    static openEditModal() {
+    }    static openEditModal() {
         document.getElementById('editModal').style.display = 'flex';
     }
 
