@@ -28,22 +28,17 @@ public class NoteController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createNote(@RequestBody NoteRequest noteRequest) {
+
         String reply = noteService.getReply(noteRequest);
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "Massage sended successfully");
         response.put("aiResponse", reply);
-
         return ResponseEntity.ok(response);
     }
 
 
-    @DeleteMapping("/{noteid}")
-    public ResponseEntity<Void> deleteNote(@PathVariable ObjectId noteid) {
-        noteService.deleteById(noteid);
-        return ResponseEntity.noContent().build();
-    }
     @GetMapping("/reply")
     public ResponseEntity<String> getReply(@RequestBody NoteRequest noteRequest) {
         String reply = noteService.getReply(noteRequest);

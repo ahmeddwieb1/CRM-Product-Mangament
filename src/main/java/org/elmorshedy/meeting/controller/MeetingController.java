@@ -48,7 +48,8 @@ public class MeetingController {
 //    }
 
     @PutMapping("/{meetingId}")
-    public ResponseEntity<MeetingDTO> updateMeeting(@PathVariable ObjectId meetingId, @RequestBody MeetingRequest request) {
+    public ResponseEntity<MeetingDTO> updateMeeting(@PathVariable ObjectId meetingId,
+                                                    @RequestBody MeetingRequest request) {
         MeetingDTO updated = meetingService.updateMeeting(meetingId, request);
         return ResponseEntity.ok(updated);
     }

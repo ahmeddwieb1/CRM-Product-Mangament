@@ -42,7 +42,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         logger.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
-//        final String PUBLIC_ENDPOINT_PREFIX = "/api/auth/public";
 
         String path = request.getRequestURI();
 

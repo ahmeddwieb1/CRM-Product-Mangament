@@ -1,7 +1,7 @@
 class Meetings {
     static init() {
         this.token = localStorage.getItem('token');
-        this.me = { id: null, username: localStorage.getItem('username') || 'User' };
+        this.me = {id: null, username: localStorage.getItem('username') || 'User'};
 
         if (!this.isJwt(this.token)) {
             localStorage.clear();
@@ -12,7 +12,7 @@ class Meetings {
         document.getElementById('welcome').textContent = 'Welcome, ' + this.me.username;
         document.getElementById('logout').addEventListener('click', this.logout);
 
-        this.authHeaders = { Authorization: 'Bearer ' + this.token };
+        this.authHeaders = {Authorization: 'Bearer ' + this.token};
 
         this.loadMe()
             .then(() => this.loadLeads())
@@ -20,9 +20,12 @@ class Meetings {
             .then(() => this.loadMeetings())
             .catch(error => console.error('Initialization error:', error));
 
-        document.getElementById('meeting-form').addEventListener('submit', this.createMeeting.bind(this));
-        document.getElementById('edit-meeting-form').addEventListener('submit', this.updateMeeting.bind(this));
-        document.getElementById('add-note-btn').addEventListener('click', this.addNoteInModal.bind(this));
+        document.getElementById('meeting-form')
+            .addEventListener('submit', this.createMeeting.bind(this));
+        document.getElementById('edit-meeting-form')
+            .addEventListener('submit', this.updateMeeting.bind(this));
+        document.getElementById('add-note-btn')
+            .addEventListener('click', this.addNoteInModal.bind(this));
 
         document.getElementById('edit-meeting-btn').addEventListener('click', () => {
             const activeMeeting = document.querySelector('.item.active');
@@ -45,7 +48,7 @@ class Meetings {
 
     static authFetch(url, options = {}) {
         const headers = Object.assign({}, options.headers || {}, this.authHeaders);
-        return fetch(url, { ...options, headers });
+        return fetch(url, {...options, headers});
     }
 
     static async readError(res) {
@@ -216,7 +219,7 @@ class Meetings {
 
     static getStatusBadgeClass(status) {
         switch (status) {
-            case 'SCHEDULED':
+            case 'SCEDULED':
                 return 'badge-info';
             case 'COMPLETED':
                 return 'badge-success';
@@ -260,7 +263,6 @@ class Meetings {
             </div>
             <div class="kv">
                 <strong>Type:</strong>
-<!--                todo-->
                 <span>${meeting.type || 'Not specified'}</span>
             </div>
             <div class="kv">
@@ -339,7 +341,7 @@ class Meetings {
         try {
             const res = await this.authFetch('/api/meetings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
 
@@ -353,19 +355,50 @@ class Meetings {
                 // Reload meetings
                 await this.loadMeetings();
             } else {
-                const errObj = await res.json();
-                const errMessage = errObj.message || 'Failed to create meeting';
+                let errMessage = 'Failed to create meeting';
+                try {
+                    // حاول تقرأه JSON
+                    const errObj = await res.json();
+                    errMessage = errObj.message || errMessage;
+                } catch (parseError) {
+                    // لو مش JSON، هاته كـ Text
+                    const errText = await res.text();
+                    errMessage = errText;
+                }
                 msg.textContent = errMessage;
                 msg.style.color = 'var(--danger)';
             }
         } catch (e) {
-            console.error('Error creating meeting', e);
             msg.textContent = 'Unexpected error occurred';
             msg.style.color = 'var(--danger)';
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-plus"></i> Schedule Meeting';
-            setTimeout(() => { msg.textContent = ''; }, 3000);
+            setTimeout(() => {
+                msg.textContent = '';
+            }, 3000);
+        }
+    }
+    static renderNotesList(notes) {
+        const notesList = document.getElementById('notes-list');
+        notesList.innerHTML = '';
+
+        if (notes && notes.length > 0) {
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.innerHTML = `
+                    <span>${note}</span>
+                    <div class="note-actions">
+                        <button class="note-delete" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                notesList.appendChild(noteItem);
+            });
+        } else {
+            notesList.innerHTML = '<div class="muted">No notes</div>';
         }
     }
 
@@ -401,29 +434,6 @@ class Meetings {
         } catch (e) {
             console.error('Error loading meeting for edit:', e);
             alert('Failed to load meeting details');
-        }
-    }
-
-    static renderNotesList(notes) {
-        const notesList = document.getElementById('notes-list');
-        notesList.innerHTML = '';
-
-        if (notes && notes.length > 0) {
-            notes.forEach(note => {
-                const noteItem = document.createElement('div');
-                noteItem.className = 'note-item';
-                noteItem.innerHTML = `
-                    <span>${note}</span>
-                    <div class="note-actions">
-                        <button class="note-delete" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                notesList.appendChild(noteItem);
-            });
-        } else {
-            notesList.innerHTML = '<div class="muted">No notes</div>';
         }
     }
 
@@ -466,7 +476,7 @@ class Meetings {
         try {
             const res = await this.authFetch(`/api/meetings/${meetingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
 
@@ -498,7 +508,7 @@ class Meetings {
         if (!confirm('Are you sure you want to delete this meeting?')) return;
 
         try {
-            const res = await this.authFetch(`/api/meetings/${meetingId}`, { method: 'DELETE' });
+            const res = await this.authFetch(`/api/meetings/${meetingId}`, {method: 'DELETE'});
             if (res.ok) {
                 alert('Meeting deleted successfully');
                 this.loadMeetings();
@@ -526,8 +536,8 @@ class Meetings {
         try {
             const res = await this.authFetch(`/api/meetings/${meetingId}/notes`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: noteContent })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content: noteContent})
             });
 
             if (res.ok) {
@@ -578,8 +588,8 @@ class Meetings {
         try {
             const res = await this.authFetch(`/api/meetings/${meetingId}/notes`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: noteContent })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content: noteContent})
             });
 
             if (res.ok) {
@@ -595,7 +605,6 @@ class Meetings {
     }
 }
 
-// Initialize the Meetings class when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     Meetings.init();
 });

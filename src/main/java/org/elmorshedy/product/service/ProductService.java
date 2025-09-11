@@ -8,6 +8,7 @@ import org.elmorshedy.product.repo.ProductRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ProductService {
@@ -19,16 +20,14 @@ public class ProductService {
 
     public ProductDTO getProduct(ObjectId id) {
         Product product = productRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
         return new ProductDTO(product);
     }
 
-    //done
     public Product CreateProduct(Product product) {
         return productRepo.save(product);
     }
 
-    //done
     public List<ProductDTO> getAllProducts() {
         return productRepo.findAll()
                 .stream()
@@ -38,22 +37,21 @@ public class ProductService {
 
     public void deleteProduct(ObjectId id) {
         if (!productRepo.existsById(id)) {
-            throw new RuntimeException("Product not found with id: " + id);
+            throw new NoSuchElementException("Product not found with id: " + id);
         }
         productRepo.deleteById(id);
     }
 
     public ProductDTO editamount(ObjectId id, int amount) {
         Product product = productRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
         product.setAmount(amount);
         return new ProductDTO(productRepo.save(product));
     }
 
-    //done
     public ProductDTO updateProduct(ObjectId id, ProductUpdateRequest product) {
         Product existingProduct = productRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
 
         if (product.getDescription() != null) {
             existingProduct.setDescription(product.getDescription());

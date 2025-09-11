@@ -43,12 +43,6 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    private RoleRepo roleRepo;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private UserServiceImp userService;
 
     @PostMapping("/public/signin")
@@ -83,41 +77,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/public/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepo.existsByUsername(signUpRequest.getUsername())
-                || userRepo.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username or Email is already in use!"));
-        }
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                passwordEncoder.encode(signUpRequest.getPassword()));
 
-        Set<String> strRoles = signUpRequest.getRoles();
-        Role role;
-
-        if (strRoles == null || strRoles.isEmpty()) {
-            role = roleRepo.findByRolename(AppRole.SALES_REP)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        } else {
-            String roleStr = strRoles.iterator().next();
-            if (roleStr.equalsIgnoreCase("ADMIN")) {
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: Admin role is restricted and cannot be assigned!"));} else {
-                role = roleRepo.findByRolename(AppRole.SALES_REP)
-                        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            }
-        }
-        user.setRole(role);
-        userRepo.save(user);
-        log.info("User registered successfully!");
-        UserDTO userDTO = UserMapper.toUserDTO(user);
-        return ResponseEntity.ok(userDTO);
-    }
 
     @GetMapping("/user")
     public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetails userDetails) {

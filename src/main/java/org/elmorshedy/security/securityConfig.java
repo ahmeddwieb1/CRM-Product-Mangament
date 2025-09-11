@@ -65,7 +65,8 @@ public class securityConfig {
                         .requestMatchers("/api/auth/public/**").permitAll()
                         .requestMatchers(
                                 "/", "/index.html", "/auth", "/auth.html", "/dashboard",
-                                "/dashboard.html","/dashboard.js", "/settings", "/settings.html", "/leads",
+                                "/dashboard.html","/dashboard.js", "/settings", "/settings.html",
+                                "/settings.js", "/leads",
                                 "/leads.html","/product.html","/product.js",
                                 "/notes.html","/notes.js", "/meetings",
                                 "/meetings.html","/meetings.js",

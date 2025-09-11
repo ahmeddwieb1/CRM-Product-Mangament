@@ -1,4 +1,3 @@
-
 // Basic data
 const token = localStorage.getItem('token');
 const user = localStorage.getItem('username') || 'User';
@@ -64,7 +63,6 @@ function setErrorState(elementId, message = 'Failed to load data') {
             `;
 }
 
-// Function to create list items
 function createListItem(icon, text, badge = null) {
     return `
                 <li>
@@ -76,17 +74,19 @@ function createListItem(icon, text, badge = null) {
                 </li>
             `;
 }
-// todo summary end point
-// Fetch summary data
+
 authFetch('/api/dashboard/summary')
     .then(r => r.ok ? r.json() : Promise.reject(r))
     .then(data => {
-        document.getElementById('total-leads').textContent = data.totalLeads || 0;
-        document.getElementById('total-meetings').textContent = data.totalMeetings || 0;
-        document.getElementById('total-products').textContent = data.totalProducts || 0;
+        document.getElementById('total-leads').textContent = data.leads || 0;
+        document.getElementById('total-meetings').textContent = data.meetings || 0;
+        document.getElementById('total-products').textContent = data.products || 0;
     })
-    .catch(() => {
-        console.error('Failed to load summary data');
+    .catch((error) => {
+        console.error('Failed to load summary data:', error);
+        document.getElementById('total-leads').textContent = '0';
+        document.getElementById('total-meetings').textContent = '0';
+        document.getElementById('total-products').textContent = '0';
     });
 
 // Fetch leads
@@ -104,7 +104,7 @@ authFetch('/api/lead')
                 return createListItem(
                     'fas fa-user',
                     lead.leadName || lead.name || 'Lead',
-                    { class: badgeClass, text: lead.status || '' }
+                    {class: badgeClass, text: lead.status || ''}
                 );
             }).join('');
         } else {
@@ -132,7 +132,7 @@ authFetch('/api/meetings')
                 return createListItem(
                     'fas fa-video',
                     meeting.title || 'Meeting',
-                    { class: badgeClass, text: meeting.status || '' }
+                    {class: badgeClass, text: meeting.status || ''}
                 );
             }).join('');
         } else {

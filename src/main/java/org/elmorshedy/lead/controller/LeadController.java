@@ -33,40 +33,24 @@ public class LeadController {
 
     @PostMapping
     public ResponseEntity<LeadDTO> addLead(@Valid @RequestBody RequestLead leadRequest, @AuthenticationPrincipal UserDetails userDetails) {
-        try {
             LeadDTO savedLead = leadService.addLead(leadRequest, userDetails.getUsername());
             return ResponseEntity.ok(savedLead);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body((LeadDTO) Map.of("error", e.getMessage()));
-        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateLead(@PathVariable ObjectId id,
                                         @RequestBody @Valid RequestLead leadRequest,
                                         @AuthenticationPrincipal UserDetails userDetails) {
-        try {
             LeadDTO updatedLead = leadService.updateLead(id, leadRequest, userDetails.getUsername());
             return ResponseEntity.ok(updatedLead);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Internal server error: " + e.getMessage()));
-        }
-    }//todo check if it work
+    }
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatestatus(@PathVariable ObjectId id,
                                         @RequestBody RequestLead leadRequest) {
-        try {
+
             LeadDTO updatedLead = leadService.updateLeadStatus(id, leadRequest);
             return ResponseEntity.ok(updatedLead);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Internal server error: " + e.getMessage()));
-        }
+
     }
 
     @GetMapping("/{id}")
