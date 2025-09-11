@@ -33,8 +33,7 @@ function validateEmail(email){
 async function doSignin(username, password){
   const res = await fetch('/api/auth/public/signin', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ username, password })
-  });
+      body: JSON.stringify({ usernameOrEmail: username, password })  });
   if(!res.ok){
     const t = await res.json().catch(()=>({message:'Login failed'}));
     throw new Error(t.message || 'Login failed');

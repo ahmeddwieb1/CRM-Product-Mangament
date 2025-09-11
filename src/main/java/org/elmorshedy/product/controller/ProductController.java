@@ -9,6 +9,7 @@ import org.elmorshedy.product.model.ProductUpdateRequest;
 import org.elmorshedy.product.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.CreateProduct(product));
@@ -37,7 +38,7 @@ public class ProductController {
     public ResponseEntity<ProductDTO> getProduct(@PathVariable ObjectId id) {
         return ResponseEntity.ok(productService.getProduct(id));
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable ObjectId id) {
         productService.deleteProduct(id);
@@ -46,13 +47,14 @@ public class ProductController {
 
     @PatchMapping("/{id}/amount")
     public ResponseEntity<ProductDTO> updateamount(@PathVariable ObjectId id,
-                                                @Valid @RequestBody ProductUpdateRequest product) {
+                                                   @Valid @RequestBody ProductUpdateRequest product) {
         return ResponseEntity.ok(productService.editamount(id, product.getAmount()));
     }
 
-        @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable ObjectId id,
-                                                 @RequestBody ProductUpdateRequest product) {
+                                                    @RequestBody ProductUpdateRequest product) {
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }
 }

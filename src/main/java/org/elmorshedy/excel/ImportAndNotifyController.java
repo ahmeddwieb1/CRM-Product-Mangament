@@ -13,6 +13,7 @@ import org.elmorshedy.user.model.AppRole;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +36,7 @@ public class ImportAndNotifyController {
         this.emailService = emailService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/excel")
     public ResponseEntity<?> importExcelAndNotify(@RequestParam("file") MultipartFile file) throws IOException {
 
