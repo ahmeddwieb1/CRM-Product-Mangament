@@ -93,6 +93,7 @@ public class AdminController {
         return ResponseEntity.ok(userDTO);
     }
 
+//todo add in front
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable ObjectId id) {
         userService.deleteUser(id);

@@ -6,6 +6,8 @@ import org.bson.types.ObjectId;
 import org.elmorshedy.lead.repo.LeadRepo;
 import org.elmorshedy.meeting.model.*;
 import org.elmorshedy.meeting.repo.MeetingRepo;
+import org.elmorshedy.user.model.AppRole;
+import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,17 +50,6 @@ public class MeetingServiceImp implements MeetingService {
         if (request.getNotes() != null) {
             meeting.setNotes(request.getNotes());
         }
-
-        if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
-            throw new NoSuchElementException("Client not found with ID: " + request.getClientId());
-        }
-        meeting.setClientId(new ObjectId(request.getClientId()));
-
-        if (!userRepo.existsById(new ObjectId(request.getAssignedToId()))) {
-            throw new NoSuchElementException("User not found with ID: " + request.getAssignedToId());
-        }
-        meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
-
         return meeting;
     }
 
@@ -81,12 +72,36 @@ public class MeetingServiceImp implements MeetingService {
         }
     }
 
+    private void assignMeetingToUserAndLead(Meeting meeting, User currentUser, MeetingRequest request) {
+        boolean isAdmin = isAdmin(currentUser);
+
+        if (isAdmin && request.getClientId() != null) {
+            if (!leadRepo.existsById(new ObjectId(request.getClientId()))) {
+                throw new NoSuchElementException("Client not found with ID: " + request.getClientId());
+            }
+            meeting.setClientId(new ObjectId(request.getClientId()));
+        } else {
+            meeting.setClientId(currentUser.getId());
+        }
+
+        if (isAdmin && request.getAssignedToId() != null) {
+            if (!userRepo.existsById(new ObjectId(request.getAssignedToId()))) {
+                throw new NoSuchElementException("User not found with ID: " + request.getAssignedToId());
+            }
+            meeting.setAssignedToId(new ObjectId(request.getAssignedToId()));
+        } else {
+            meeting.setAssignedToId(currentUser.getId());
+        }
+
+    }
+
     @Transactional
     @Override
-    public MeetingDTO addMeeting(MeetingRequest request) {
-
+    public MeetingDTO addMeeting(MeetingRequest request, String currentUsername) {
+        User currentUser = userRepo.findByUsername(currentUsername)
+                .orElseThrow(() -> new NoSuchElementException("Current user not found"));
         Meeting meeting = createMeetingFromRequest(request);
-
+        assignMeetingToUserAndLead(meeting, currentUser, request);
         validateMeeting(meeting);
 
         Meeting saved = meetingRepo.save(meeting);
@@ -108,12 +123,19 @@ public class MeetingServiceImp implements MeetingService {
     }
 
     @Override
+    public List<MeetingDTO> getMeetingByuser(ObjectId id) {
+        return meetingRepo.findByAssignedToId(id).stream()
+                .map(meetingMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteMeeting(ObjectId meetingId) {
         Meeting meeting = meetingRepo.findById(meetingId)
                 .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + meetingId));
         if (!meeting.getStatus().equals(Status.SCHEDULED)) {
             meetingRepo.delete(meeting);
-        }else {
+        } else {
             throw new IllegalStateException("Cannot delete a scheduled meeting with ID: " + meetingId);
 
         }
@@ -210,5 +232,9 @@ public class MeetingServiceImp implements MeetingService {
         }
         Meeting updated = meetingRepo.save(meeting);
         return meetingMapper.toDTO(updated);
+    }
+
+    private boolean isAdmin(User user) {
+        return user.getRole().getRolename().equals(AppRole.ROLE_ADMIN);
     }
 }

@@ -12,6 +12,8 @@ public interface LeadService {
 
     Optional<LeadDTO> getLead(ObjectId id);
 
+    List<LeadDTO> getLeadsForSales(ObjectId assignedToId);
+
     List<LeadDTO> getAllLeads();
 
     LeadDTO addLead(RequestLead leadRequest, String currentUsername);

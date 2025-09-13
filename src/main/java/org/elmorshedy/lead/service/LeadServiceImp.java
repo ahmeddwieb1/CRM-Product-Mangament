@@ -38,6 +38,14 @@ public class LeadServiceImp implements LeadService {
         return leadRepo.findById(id)
                 .map(leadMapper::toDTO);
     }
+    @Override
+    public List<LeadDTO> getLeadsForSales(ObjectId assignedToId) {
+        return leadRepo.findByAssignedToId(assignedToId)
+                .stream()
+                .map(leadMapper::toDTO)
+                .toList();
+    }
+
 
 
     @Override

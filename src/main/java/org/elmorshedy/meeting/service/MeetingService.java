@@ -10,9 +10,11 @@ import java.util.List;
 public interface MeetingService {
 
 
-    MeetingDTO addMeeting(MeetingRequest request);
+    MeetingDTO addMeeting(MeetingRequest request,String currentuser);
 
     List<MeetingDTO> getAllMeetings();
+
+    List<MeetingDTO> getMeetingByuser(ObjectId id);
 
     void deleteMeeting(ObjectId meetingId);
 

@@ -15,6 +15,8 @@ public interface LeadRepo extends MongoRepository<Lead, ObjectId> {
                           @Pattern(regexp = "^[0-9]+$",
                                   message = "Phone number must contain only digits")
                           String phone);
-Optional<Lead> findByPhone(String phone);
 
+    Optional<Lead> findByPhone(String phone);
+
+    List<Lead> findByAssignedToId(ObjectId assignedToId);
 }

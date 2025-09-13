@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 @RestController
 @RequestMapping("/api/lead")
 public class LeadController {
@@ -32,24 +31,27 @@ public class LeadController {
     }
 
     @PostMapping
-    public ResponseEntity<LeadDTO> addLead(@Valid @RequestBody RequestLead leadRequest, @AuthenticationPrincipal UserDetails userDetails) {
-            LeadDTO savedLead = leadService.addLead(leadRequest, userDetails.getUsername());
-            return ResponseEntity.ok(savedLead);
+    public ResponseEntity<LeadDTO> addLead(@Valid @RequestBody RequestLead leadRequest,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        LeadDTO savedLead = leadService.addLead(leadRequest, userDetails.getUsername());
+        return ResponseEntity.ok(savedLead);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateLead(@PathVariable ObjectId id,
                                         @RequestBody @Valid RequestLead leadRequest,
                                         @AuthenticationPrincipal UserDetails userDetails) {
-            LeadDTO updatedLead = leadService.updateLead(id, leadRequest, userDetails.getUsername());
-            return ResponseEntity.ok(updatedLead);
+        LeadDTO updatedLead = leadService.updateLead(id, leadRequest, userDetails.getUsername());
+        return ResponseEntity.ok(updatedLead);
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<?> updatestatus(@PathVariable ObjectId id,
-                                        @RequestBody RequestLead leadRequest) {
+                                          @RequestBody RequestLead leadRequest) {
 
-            LeadDTO updatedLead = leadService.updateLeadStatus(id, leadRequest);
-            return ResponseEntity.ok(updatedLead);
+        LeadDTO updatedLead = leadService.updateLeadStatus(id, leadRequest);
+        return ResponseEntity.ok(updatedLead);
 
     }
 
@@ -60,12 +62,20 @@ public class LeadController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{assignedToId}/user")
+    public ResponseEntity<List<LeadDTO>> getLeadsByAssignedToId(@PathVariable ObjectId assignedToId) {
+        List<LeadDTO> leads = leadService.getLeadsForSales(assignedToId);
+        return ResponseEntity.ok(leads);
+    }
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<LeadDTO> getlead() {
         return leadService.getAllLeads();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteLead(@PathVariable ObjectId id) {
         leadService.deleteLead(id);

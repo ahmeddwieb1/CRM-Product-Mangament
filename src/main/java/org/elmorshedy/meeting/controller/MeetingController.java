@@ -10,6 +10,8 @@ import org.elmorshedy.meeting.service.MeetingServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,14 +29,19 @@ public class MeetingController {
     }
 
     @PostMapping
-    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody @Valid MeetingRequest request) {
-        MeetingDTO created = meetingService.addMeeting(request);
+    public ResponseEntity<MeetingDTO> createMeeting(@RequestBody @Valid MeetingRequest request,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+        MeetingDTO created = meetingService.addMeeting(request,userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<MeetingDTO> getmeetingbyid(@PathVariable ObjectId id) {
         return ResponseEntity.ok(meetingService.getMeetingById(id));
+    }
+    @GetMapping("/{id}/user")
+    public ResponseEntity<List<MeetingDTO>> getmeetingbyuser(@PathVariable ObjectId id) {
+        return ResponseEntity.ok(meetingService.getMeetingByuser(id));
     }
 
     @GetMapping
