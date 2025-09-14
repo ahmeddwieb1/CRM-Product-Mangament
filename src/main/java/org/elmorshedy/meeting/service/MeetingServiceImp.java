@@ -137,9 +137,7 @@ public class MeetingServiceImp implements MeetingService {
             meetingRepo.delete(meeting);
         } else {
             throw new IllegalStateException("Cannot delete a scheduled meeting with ID: " + meetingId);
-
         }
-        log.info("Deleting meeting: {}", meeting.getTitle());
     }
 
 

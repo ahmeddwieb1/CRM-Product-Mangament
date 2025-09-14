@@ -34,11 +34,11 @@ import java.time.LocalDate;
         securedEnabled = true,
         jsr250Enabled = true)
 public class securityConfig {
+
     @Autowired
     private AuthEntryPointJwtImp unauthorizedHandler;
     @Autowired
     private JwtUtils jwtUtils;
-
     @Autowired
     private UserDetailsServiceImp userDetailsService;
 
@@ -48,7 +48,8 @@ public class securityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager
+            (AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
@@ -61,8 +62,8 @@ public class securityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((requests) ->
                 requests
-                        // Public endpoints
                         .requestMatchers("/api/auth/public/**").permitAll()
+
                         .requestMatchers(
                                 "/", "/index.html", "/auth", "/auth.html", "/dashboard",
                                 "/dashboard.html","/dashboard.js", "/settings", "/settings.html",
@@ -73,10 +74,17 @@ public class securityConfig {
                                 "/styles.css", "/auth.js", "/favicon.ico",
                                 "/static/**", "/assets/**"
                                 ,"/lead.js"
-                        )
-                        .permitAll()
+                        ).permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml",
+                                "/swagger-ui.html", "/swagger-ui/**",
+                                "/swagger-resources/**", "/configuration/ui", "/configuration/security",
+                                "/webjars/**"
+                        ).permitAll()
+
                         .requestMatchers("/.well-known/**").permitAll()
                         .requestMatchers("/error").permitAll()
+
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated());
 
