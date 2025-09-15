@@ -100,6 +100,12 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable ObjectId id) {
+        User user = userService.findById(id);
+        return ResponseEntity.ok(user);
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable ObjectId id,
                                               @RequestBody User user) {

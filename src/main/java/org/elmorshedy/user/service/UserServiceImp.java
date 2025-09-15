@@ -1,6 +1,7 @@
 package org.elmorshedy.user.service;
 
 import org.bson.types.ObjectId;
+import org.elmorshedy.meeting.service.MeetingServiceImp;
 import org.elmorshedy.user.model.*;
 import org.elmorshedy.user.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,15 @@ public class UserServiceImp implements UserService {
 
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final MeetingServiceImp meetingService;
 
     @Autowired
-    public UserServiceImp(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    public UserServiceImp(UserRepo userRepo,
+                          PasswordEncoder passwordEncoder,
+                          MeetingServiceImp meetingService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        this.meetingService = meetingService;
     }
 
     @Override
@@ -69,8 +74,9 @@ public class UserServiceImp implements UserService {
                 throw new RuntimeException("Cannot delete admin users");
             }
         }
-
 //todo : if sales have meeting can't delete sales and if have lead transfer to anther sales
+//                                                          >>>>> new idea transfer lead and meeting to anther sales
+        meetingService.deleteMeetingsByAssignedToId(userId);
 
         userRepo.delete(user);
     }

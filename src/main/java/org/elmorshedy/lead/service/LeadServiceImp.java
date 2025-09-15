@@ -5,6 +5,7 @@ import org.elmorshedy.lead.model.Lead;
 import org.elmorshedy.lead.model.RequestLead;
 import org.elmorshedy.lead.model.LeadDTO;
 import org.elmorshedy.lead.repo.LeadRepo;
+import org.elmorshedy.meeting.service.MeetingServiceImp;
 import org.elmorshedy.user.model.AppRole;
 import org.elmorshedy.user.model.User;
 import org.elmorshedy.user.repo.UserRepo;
@@ -24,12 +25,17 @@ public class LeadServiceImp implements LeadService {
     private final LeadRepo leadRepo;
     private final UserRepo userRepo;
     private final LeadMapper leadMapper;
+    private final MeetingServiceImp meetingService;
 
     @Autowired
-    public LeadServiceImp(LeadRepo leadRepo, UserRepo userRepo, LeadMapper leadMapper) {
+    public LeadServiceImp(LeadRepo leadRepo,
+                          UserRepo userRepo,
+                          LeadMapper leadMapper,
+                          MeetingServiceImp meetingService) {
         this.leadRepo = leadRepo;
         this.userRepo = userRepo;
         this.leadMapper = leadMapper;
+        this.meetingService = meetingService;
     }
 
     //done
@@ -141,11 +147,13 @@ public class LeadServiceImp implements LeadService {
         Lead savedLead = leadRepo.save(lead);
         return leadMapper.toDTO(savedLead);
     }
+
     @Override
     public void deleteLead(ObjectId id) {
         if (!leadRepo.existsById(id)) {
             throw new IllegalArgumentException("Lead not found with id: " + id);
         }
+        meetingService.deleteMeetingsByLeadId(id);
         leadRepo.deleteById(id);
     }
 

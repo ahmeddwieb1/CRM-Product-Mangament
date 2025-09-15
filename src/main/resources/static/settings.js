@@ -257,7 +257,6 @@ document.getElementById('edit-user-form').addEventListener('submit', async (e) =
 // Delete user
 async function deleteUser(userId) {
     try {
-        // جلب بيانات المستخدم أولاً للتحقق من أدواره
         const userRes = await authFetch(`/api/admin/${userId}`);
         if (!userRes.ok) {
             const error = await userRes.text();

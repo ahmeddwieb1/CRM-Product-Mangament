@@ -140,6 +140,21 @@ public class MeetingServiceImp implements MeetingService {
         }
     }
 
+    public void deleteMeetingsByLeadId(ObjectId leadId) {
+        if (!leadRepo.existsById(leadId)) {
+            throw new IllegalArgumentException("Lead with id " + leadId + " not found");
+        }
+
+        meetingRepo.deleteByClientId(leadId);
+    }
+    public void deleteMeetingsByAssignedToId(ObjectId userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new IllegalArgumentException("User with id " + userId + " not found");
+        }
+
+        meetingRepo.deleteByAssignedToId(userId);
+    }
+
 
 //    public List<MeetingDTO> getMeetingsByUser(String userId) {
 //        return meetingRepo.findByAssignedToId(userId)
