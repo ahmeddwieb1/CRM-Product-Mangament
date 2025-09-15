@@ -57,7 +57,7 @@ signinForm.addEventListener('submit', async (e)=>{
   btn.disabled = true; btn.textContent = 'Signing in...';
   try{
      await doSignin(username, password);
-     window.location.href = '/dashboard.html';
+     window.location.href = '/dashboard/dashboard.html';
   }catch(err){
      showError($('#signin-password'), err.message);
   }finally{

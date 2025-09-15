@@ -9,7 +9,7 @@ function isLikelyJwt(t) {
 
 if (!isLikelyJwt(token)) {
     localStorage.removeItem('token');
-    window.location.href = '/auth.html';
+    window.location.href = '/auth/auth.html';
 }
 let rolesList;
 try {
@@ -25,7 +25,7 @@ document.getElementById('logout').addEventListener('click', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('roles');
-    window.location.href = '/auth.html';
+    window.location.href = '/auth/auth.html';
 });
 
 const authHeaders = {'Authorization': 'Bearer ' + token};

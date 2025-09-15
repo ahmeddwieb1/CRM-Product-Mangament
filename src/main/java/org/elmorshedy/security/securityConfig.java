@@ -65,15 +65,17 @@ public class securityConfig {
                         .requestMatchers("/api/auth/public/**").permitAll()
 
                         .requestMatchers(
-                                "/", "/index.html", "/auth", "/auth.html", "/dashboard",
-                                "/dashboard.html","/dashboard.js", "/settings", "/settings.html",
-                                "/settings.js", "/leads",
-                                "/leads.html","/product.html","/product.js",
-                                "/notes.html","/notes.js", "/meetings",
-                                "/meetings.html","/meetings.js",
-                                "/styles.css", "/auth.js", "/favicon.ico",
+                                "/", "/index.html",
+                                "/auth/auth","/auth/auth.html","/auth/auth.js","/auth/styles.css",
+                                "/dashboard/dashboard","/dashboard/dashboard.html","/dashboard/dashboard.js",
+                                "/settings/settings","/settings/settings.html","/settings/settings.js",
+                                "/lead/leads", "/lead/leads.html","/lead/leads.js",
+                                "/product/product.html","/product/product.js",
+                                "/notes/notes.html","/notes/notes.js",
+                                "/meetings/meetings","/meetings/meetings.html","/meetings/meetings.js",
+                                "/favicon.ico",
                                 "/static/**", "/assets/**"
-                                ,"/lead.js"
+
                         ).permitAll()
                         .requestMatchers(
                                 "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml",

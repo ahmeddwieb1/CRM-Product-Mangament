@@ -10,7 +10,7 @@ function isJwt(t) {
 
 if (!isJwt(token)) {
     localStorage.clear();
-    window.location.href = '/auth.html';
+    window.location.href = '/auth/auth.html';
 }
 
 // Update UI
@@ -19,7 +19,7 @@ document.getElementById('welcome').textContent = 'Welcome, ' + user;
 // Logout
 document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear();
-    window.location.href = '/auth.html';
+    window.location.href = '/auth/auth.html';
 });
 
 const authHeaders = {'Authorization': 'Bearer ' + token};

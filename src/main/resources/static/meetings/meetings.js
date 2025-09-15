@@ -5,7 +5,7 @@ class Meetings {
 
         if (!this.isJwt(this.token)) {
             localStorage.clear();
-            window.location.href = '/auth.html';
+            window.location.href = '/auth/auth.html';
             return;
         }
 
@@ -66,7 +66,7 @@ class Meetings {
 
     static logout() {
         localStorage.clear();
-        window.location.href = '/auth.html';
+        window.location.href = '/auth/auth.html';
     }
 
     static async loadMe() {
