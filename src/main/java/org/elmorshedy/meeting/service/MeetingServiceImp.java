@@ -44,8 +44,15 @@ public class MeetingServiceImp implements MeetingService {
         meeting.setTime(request.getTime());
         meeting.setDuration(request.getDuration());
         meeting.setType(request.getType());
-        meeting.setLocation(request.getLocation());
         meeting.setStatus(request.getStatus());
+
+        meeting.setLocation(request.getLocation());
+
+        if (request.getLocation().requiresOfflineLocation()) {
+            meeting.setOffline_location(request.getOffline_location());
+        } else {
+            meeting.setOffline_location(null);
+        }
 
         if (request.getNotes() != null) {
             meeting.setNotes(request.getNotes());
@@ -147,6 +154,7 @@ public class MeetingServiceImp implements MeetingService {
 
         meetingRepo.deleteByClientId(leadId);
     }
+
     public void deleteMeetingsByAssignedToId(ObjectId userId) {
         if (!userRepo.existsById(userId)) {
             throw new IllegalArgumentException("User with id " + userId + " not found");

@@ -30,6 +30,7 @@ public class Meeting {
     private Type type;
     private Status status;
     private Location location;
+    private String offline_location;
 
     @JsonIgnore
     private ObjectId clientId;

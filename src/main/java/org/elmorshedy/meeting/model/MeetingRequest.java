@@ -24,7 +24,8 @@ public class MeetingRequest {
     @NotNull(message = "Time is required")
     private LocalTime time;
 
-    @Min(1) @Max(8)
+    @Min(1)
+    @Max(8)
     private Integer duration;
 
     @NotNull(message = "Type is required")
@@ -35,7 +36,16 @@ public class MeetingRequest {
 
     @NotNull(message = "Location is required")
     private Location location;
+    private String offline_location;
 
     private List<String> notes;
+
+    @AssertTrue(message = "Offline location must be provided if location is OFFLINE")
+    public boolean isOfflineLocationValid() {
+        if (location == Location.OFFLINE) {
+            return offline_location != null && !offline_location.isBlank();
+        }
+        return true;
+    }
 
 }

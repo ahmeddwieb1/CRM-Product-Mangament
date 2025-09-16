@@ -31,6 +31,7 @@ public class MeetingMapper {
         dto.setType(meeting.getType());
         dto.setStatus(meeting.getStatus());
         dto.setLocation(meeting.getLocation());
+        dto.setOffline_location(meeting.getOffline_location());
         dto.setNotes(meeting.getNotes());
 
         if (meeting.getClientId() != null) {
