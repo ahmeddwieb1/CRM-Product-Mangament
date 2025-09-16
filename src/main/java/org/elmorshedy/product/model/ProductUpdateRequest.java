@@ -19,5 +19,4 @@ public class ProductUpdateRequest {
     @Size(max = 500)
     private String description;
 
-    // Getters and Setters
 }

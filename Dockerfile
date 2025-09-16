@@ -10,3 +10,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","app.jar"]
 
+#todo docker don't work and need update the .env
