@@ -1,6 +1,6 @@
 variables:
   IMAGE_NAME: ahmeddwieb/crm-product-mangament
-  IMAGE_TAG: $CI_COMMIT_SHORT_SHA  # كل build له tag مميز حسب commit
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_TLS_CERTDIR: ""
 
