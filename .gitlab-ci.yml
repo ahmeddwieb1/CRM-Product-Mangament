@@ -19,6 +19,9 @@ build-image:
   script:
     - docker build --pull --cache-from $IMAGE_NAME:latest -t $IMAGE_NAME:$IMAGE_TAG .
     - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:latest
+
   only:
     - master
 
