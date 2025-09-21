@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LeadRepo extends MongoRepository<Lead, ObjectId> {
-
+    Long countByAssignedToId(ObjectId assignedToId);
     boolean existsByPhone(@Size(min = 10, max = 12)
                           @Pattern(regexp = "^[0-9]+$",
                                   message = "Phone number must contain only digits")

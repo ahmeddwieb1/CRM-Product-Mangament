@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MeetingRepo extends MongoRepository<Meeting, ObjectId> {
+    Long countByAssignedToId(ObjectId assignedToId);
+
     void deleteByAssignedToId(ObjectId assignedToId);
 
     void deleteByClientId(ObjectId clientId);

@@ -1,8 +1,11 @@
 package org.elmorshedy.user.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.elmorshedy.security.ObjectIdParam;
 import org.elmorshedy.security.request.SignupRequest;
 import org.elmorshedy.security.response.MessageResponse;
 import org.elmorshedy.user.model.*;
@@ -46,7 +49,7 @@ public class AdminController {
 
     @PutMapping("/{userId}/role")
     public ResponseEntity<User> changeUserRole(
-            @PathVariable ObjectId userId,
+            @ObjectIdParam @PathVariable ObjectId userId,
             @RequestBody ChangeRoleRequest request) {
 
         User updatedUser = userService.updateUserRole(userId, request.getRolename());
@@ -93,21 +96,22 @@ public class AdminController {
         return ResponseEntity.ok(userDTO);
     }
 
-//todo add in front
+    //todo add in front
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable ObjectId id) {
+    public ResponseEntity<String> delete( @ObjectIdParam @PathVariable ObjectId id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable ObjectId id) {
+    public ResponseEntity<User> getUserById(
+            @ObjectIdParam @PathVariable ObjectId id) {
         User user = userService.findById(id);
         return ResponseEntity.ok(user);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable ObjectId id,
+    public ResponseEntity<UserDTO> updateUser( @ObjectIdParam @PathVariable ObjectId id,
                                               @RequestBody User user) {
         UserDTO updateUser = userService.updateuser(id, user);
         return ResponseEntity.ok(updateUser);

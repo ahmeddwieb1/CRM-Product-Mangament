@@ -43,10 +43,8 @@ public class AuthEntryPointJwtImp implements AuthenticationEntryPoint {
         body.put("error", "Unauthorized");
         body.put("message", errorMessage);
         body.put("path", path);
-
 //        body.put("path", request.getServletPath());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
         objectMapper.writeValue(response.getOutputStream(), body);
         final ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);

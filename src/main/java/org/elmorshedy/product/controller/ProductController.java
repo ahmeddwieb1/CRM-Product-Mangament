@@ -14,6 +14,7 @@ import org.elmorshedy.product.model.ProductDTO;
 import org.elmorshedy.product.model.ProductUpdateRequest;
 
 import org.elmorshedy.product.service.ProductService;
+import org.elmorshedy.security.ObjectIdParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,7 +64,7 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ProductDTO> getProduct(
-            @Parameter(description = "ID of the product to retrieve") @PathVariable ObjectId id) {
+            @Parameter(description = "ID of the product to retrieve") @ObjectIdParam @PathVariable ObjectId id) {
         return ResponseEntity.ok(productService.getProduct(id));
     }
 
@@ -76,7 +77,7 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<Void> deleteProduct(
-            @Parameter(description = "ID of the product to delete") @PathVariable ObjectId id) {
+            @Parameter(description = "ID of the product to delete")@ObjectIdParam @PathVariable ObjectId id) {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
@@ -92,7 +93,7 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ProductDTO> updateAmount(
-            @Parameter(description = "ID of the product to update") @PathVariable ObjectId id,
+            @Parameter(description = "ID of the product to update")@ObjectIdParam @PathVariable ObjectId id,
             @Valid @RequestBody ProductUpdateRequest product) {
         return ResponseEntity.ok(productService.editamount(id, product.getAmount()));
     }
@@ -109,7 +110,7 @@ public class ProductController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ProductDTO> updateProduct(
-            @Parameter(description = "ID of the product to update") @PathVariable ObjectId id,
+            @Parameter(description = "ID of the product to update")@ObjectIdParam @PathVariable ObjectId id,
             @RequestBody ProductUpdateRequest product) {
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }

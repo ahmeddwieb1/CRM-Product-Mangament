@@ -19,11 +19,9 @@ import java.util.Map;
 public class NoteController {
 
     private NoteServiceImp noteService;
-    private final AiService aiService;
     @Autowired
-    public NoteController(NoteServiceImp noteService, AiService aiService) {
+    public NoteController(NoteServiceImp noteService) {
         this.noteService = noteService;
-        this.aiService = aiService;
     }
 
     @PostMapping

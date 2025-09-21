@@ -7,6 +7,7 @@ import org.elmorshedy.meeting.model.MeetingRequest;
 import org.elmorshedy.meeting.model.NoteRequest;
 import org.elmorshedy.meeting.service.MeetingMapper;
 import org.elmorshedy.meeting.service.MeetingServiceImp;
+import org.elmorshedy.security.ObjectIdParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/meetings")
 @Tag(name = "Meetings", description = "APIs for managing meetings")
@@ -54,13 +57,13 @@ public class MeetingController {
             @ApiResponse(responseCode = "404", description = "Meeting not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<MeetingDTO> getMeetingById(@PathVariable ObjectId id) {
+    public ResponseEntity<MeetingDTO> getMeetingById(@ObjectIdParam @PathVariable ObjectId id) {
         return ResponseEntity.ok(meetingService.getMeetingById(id));
     }
 
     @Operation(summary = "Get meetings for a specific user")
     @GetMapping("/{id}/user")
-    public ResponseEntity<List<MeetingDTO>> getMeetingsByUser(@PathVariable ObjectId id) {
+    public ResponseEntity<List<MeetingDTO>> getMeetingsByUser(@ObjectIdParam @PathVariable ObjectId id) {
         return ResponseEntity.ok(meetingService.getMeetingByuser(id));
     }
 
@@ -77,7 +80,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "400", description = "Validation error")
     })
     @PutMapping("/{meetingId}")
-    public ResponseEntity<MeetingDTO> updateMeeting(@PathVariable ObjectId meetingId,
+    public ResponseEntity<MeetingDTO> updateMeeting(@ObjectIdParam @PathVariable ObjectId meetingId,
                                                     @RequestBody @Valid MeetingRequest request) {
         MeetingDTO updated = meetingService.updateMeeting(meetingId, request);
         return ResponseEntity.ok(updated);
@@ -90,7 +93,7 @@ public class MeetingController {
             @ApiResponse(responseCode = "404", description = "Meeting not found")
     })
     @DeleteMapping("/{meetingId}")
-    public ResponseEntity<Void> deleteMeeting(@PathVariable ObjectId meetingId) {
+    public ResponseEntity<Void> deleteMeeting(@ObjectIdParam @PathVariable ObjectId meetingId) {
         meetingService.deleteMeeting(meetingId);
         return ResponseEntity.noContent().build();
     }
@@ -98,7 +101,7 @@ public class MeetingController {
     @Operation(summary = "Add a note to a meeting")
     @PatchMapping("/{meetingId}/notes")
     public ResponseEntity<MeetingDTO> addNoteToMeeting(
-            @PathVariable ObjectId meetingId,
+            @ObjectIdParam @PathVariable ObjectId meetingId,
             @RequestBody @Valid NoteRequest noteRequest) {
         MeetingDTO updatedMeeting = meetingService.addNoteToMeeting(meetingId, noteRequest.getContent());
         return ResponseEntity.ok(updatedMeeting);
@@ -106,7 +109,7 @@ public class MeetingController {
 
     @Operation(summary = "Delete a note from a meeting")
     @DeleteMapping("/{meetingId}/notes")
-    public ResponseEntity<MeetingDTO> deleteNoteFromMeeting(@PathVariable ObjectId meetingId,
+    public ResponseEntity<MeetingDTO> deleteNoteFromMeeting(@ObjectIdParam @PathVariable ObjectId meetingId,
                                                             @RequestBody @Valid NoteRequest noteRequest) {
         MeetingDTO updatedMeeting = meetingService.deleteNoteFromMeeting(meetingId, noteRequest.getContent());
         return ResponseEntity.ok(updatedMeeting);

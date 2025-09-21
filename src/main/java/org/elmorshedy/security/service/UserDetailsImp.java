@@ -27,6 +27,7 @@ public class UserDetailsImp implements UserDetails {
     private String password;
 
 //    private boolean is2fEnabled;
+
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImp(ObjectId id, String username, String email, String password,
@@ -37,7 +38,7 @@ public class UserDetailsImp implements UserDetails {
         this.password = password;
         this.authorities = authorities;
     }
-
+// todo add role to token
     public static UserDetailsImp build(User user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getRolename().name());
         return new UserDetailsImp(

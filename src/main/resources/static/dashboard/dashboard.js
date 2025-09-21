@@ -159,33 +159,33 @@ authFetch('/api/products')
     .catch(() => {
         setErrorState('products-list', 'Failed to load products');
     });
-
+//todo
 // Fetch recent activity
-authFetch('/api/activity')
-    .then(r => r.ok ? r.json() : Promise.reject(r))
-    .then(activities => {
-        const el = document.getElementById('recent-activity');
-        if (activities && activities.length > 0) {
-            let html = '';
-            activities.slice(0, 4).forEach(activity => {
-                html += `
-                            <div class="stat-item">
-                                <div class="stat-icon" style="background: rgba(67, 97, 238, 0.1); color: var(--primary);">
-                                    <i class="fas ${activity.icon || 'fa-bell'}"></i>
-                                </div>
-                                <div class="stat-info">
-                                    <div>${activity.action}</div>
-                                    <div class="stat-label">${activity.time}</div>
-                                </div>
-                            </div>
-                        `;
-            });
-            el.innerHTML = html;
-        } else {
-            el.innerHTML = '<p class="muted" style="text-align: center;">No recent activity</p>';
-        }
-    })
-    .catch(() => {
-        document.getElementById('recent-activity').innerHTML =
-            '<p class="muted" style="text-align: center;">Failed to load activities</p>';
-    });
+// authFetch('/api/activity')
+//     .then(r => r.ok ? r.json() : Promise.reject(r))
+//     .then(activities => {
+//         const el = document.getElementById('recent-activity');
+//         if (activities && activities.length > 0) {
+//             let html = '';
+//             activities.slice(0, 4).forEach(activity => {
+//                 html += `
+//                             <div class="stat-item">
+//                                 <div class="stat-icon" style="background: rgba(67, 97, 238, 0.1); color: var(--primary);">
+//                                     <i class="fas ${activity.icon || 'fa-bell'}"></i>
+//                                 </div>
+//                                 <div class="stat-info">
+//                                     <div>${activity.action}</div>
+//                                     <div class="stat-label">${activity.time}</div>
+//                                 </div>
+//                             </div>
+//                         `;
+//             });
+//             el.innerHTML = html;
+//         } else {
+//             el.innerHTML = '<p class="muted" style="text-align: center;">No recent activity</p>';
+//         }
+//     })
+//     .catch(() => {
+//         document.getElementById('recent-activity').innerHTML =
+//             '<p class="muted" style="text-align: center;">Failed to load activities</p>';
+//     });

@@ -9,6 +9,6 @@ public class SettingsController {
     @GetMapping("/settings")
     public String settingsPage() {
         // Serve the static settings page
-        return "redirect:/settings.html";
+        return "redirect:/settings/settings.html";
     }
 }

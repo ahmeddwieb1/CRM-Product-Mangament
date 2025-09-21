@@ -45,7 +45,7 @@ public class JwtUtils {
 
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser()
-                        .verifyWith((SecretKey) key())
+                .verifyWith((SecretKey) key())
                 .build().parseSignedClaims(token)
                 .getPayload().getSubject();
     }
@@ -65,7 +65,6 @@ public class JwtUtils {
                 logger.debug("JWT token is empty");
                 return false;
             }
-            // Quick shape check: header.payload.signature
             long dotCount = token.chars().filter(ch -> ch == '.').count();
             if (dotCount != 2) {
                 logger.warn("JWT token has invalid compact form (expected 2 dots)");
