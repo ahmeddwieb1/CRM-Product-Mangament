@@ -118,12 +118,10 @@ public class MeetingServiceImp implements MeetingService {
 
     @Override
     public List<MeetingDTO> getAllMeetings() {
-        return meetingRepo.findAll().stream()
-                .map(meetingMapper::toDTO)
-                .collect(Collectors.toList());
+        return meetingRepo.findAllWithUserAndLead();
     }
 
-    public MeetingDTO getMeetingById(ObjectId id) {
+        public MeetingDTO getMeetingById(ObjectId id) {
         Meeting meeting = meetingRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + id));
         return meetingMapper.toDTO(meeting);

@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface MeetingRepo extends MongoRepository<Meeting, ObjectId> {
+public interface MeetingRepo extends MongoRepository<Meeting, ObjectId>,MeetingRepositoryCustom {
     Long countByAssignedToId(ObjectId assignedToId);
 
     void deleteByAssignedToId(ObjectId assignedToId);

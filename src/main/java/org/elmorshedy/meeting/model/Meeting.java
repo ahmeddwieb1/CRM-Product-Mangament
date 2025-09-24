@@ -2,14 +2,10 @@ package org.elmorshedy.meeting.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.ToString;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.bson.types.ObjectId;
-import org.elmorshedy.lead.model.Lead;
-import org.elmorshedy.user.model.User;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.HashIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,10 +27,10 @@ public class Meeting {
     private Status status;
     private Location location;
     private String offline_location;
-
+//    @HashIndexed
     @JsonIgnore
     private ObjectId clientId;
-
+//    @HashIndexed
     @JsonIgnore
     private ObjectId assignedToId;
 
