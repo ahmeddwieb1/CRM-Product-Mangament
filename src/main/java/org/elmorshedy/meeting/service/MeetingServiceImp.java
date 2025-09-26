@@ -105,33 +105,75 @@ public class MeetingServiceImp implements MeetingService {
     @Transactional
     @Override
     public MeetingDTO addMeeting(MeetingRequest request, String currentUsername) {
+        long start = System.currentTimeMillis();
         User currentUser = userRepo.findByUsername(currentUsername)
                 .orElseThrow(() -> new NoSuchElementException("Current user not found"));
+        long end = System.currentTimeMillis();
+        System.out.println("get user by username : " + "Query time: " + (end - start) + "ms");
+
+        long start1 = System.currentTimeMillis();
         Meeting meeting = createMeetingFromRequest(request);
         assignMeetingToUserAndLead(meeting, currentUser, request);
         validateMeeting(meeting);
-
+        long end1 = System.currentTimeMillis();
+        System.out.println("create meeting: " + "Query time: " + (end1 - start1) + "ms");
+        long start2 = System.currentTimeMillis();
         Meeting saved = meetingRepo.save(meeting);
-        return meetingMapper.toDTO(saved);
+        long end2 = System.currentTimeMillis();
+        System.out.println("save in mongo: " + "Query time: " + (end2 - start2) + "ms");
+        long start3 = System.currentTimeMillis();
+        MeetingDTO result = meetingMapper.toDTO(saved);
+        long end3 = System.currentTimeMillis();
+        System.out.println("convert to dto : " + "Query time: " + (end3 - start3) + "ms");
+        System.out.println("totale create meeting: " + "Query time: " + (end3 - start) + "ms");
+        return result;
     }
 
 
     @Override
     public List<MeetingDTO> getAllMeetings() {
-        return meetingRepo.findAllWithUserAndLead();
+        long start = System.currentTimeMillis();
+        List<MeetingDTO> result = meetingRepo.findAllWithUserAndLead();
+        long end = System.currentTimeMillis();
+        System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
+        return result;
+    }
+    public List<MeetingDTO> findMeetingsWithPage(int page, int size) {
+        long start = System.currentTimeMillis();
+        List<MeetingDTO> result = meetingRepo.findAllWithUserAndLeadWithPage(page, size);
+        long end = System.currentTimeMillis();
+        System.out.println("get meeting by page: " + "Query time: " + (end - start) + "ms");
+        return result;
     }
 
+
         public MeetingDTO getMeetingById(ObjectId id) {
+        long start1 = System.currentTimeMillis();
         Meeting meeting = meetingRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Meeting not found with ID: " + id));
-        return meetingMapper.toDTO(meeting);
+        long end1 = System.currentTimeMillis();
+        System.out.println("get meeting by id");
+        System.out.println("get meeting by userid : Query time: " + (end1 - start1) + "ms");
+
+        long start2 = System.currentTimeMillis();
+        MeetingDTO result = meetingMapper.toDTO(meeting);
+        long end2 = System.currentTimeMillis();
+        System.out.println("dto mapper");
+        System.out.println("get meeting by userid : Query time: " + (end2 - start2) + "ms");
+        System.out.println("totale get meeting by id : Query time: " + (end2 - start1) + "ms");
+        return result;
     }
 
     @Override
     public List<MeetingDTO> getMeetingByuser(ObjectId id) {
-        return meetingRepo.findByAssignedToId(id).stream()
+        long start = System.currentTimeMillis();
+        List<MeetingDTO> result = meetingRepo
+                .findByAssignedToId(id).stream()
                 .map(meetingMapper::toDTO)
                 .collect(Collectors.toList());
+        long end = System.currentTimeMillis();
+        System.out.println("get meeting by userid : Query time: " + (end - start) + "ms");
+        return result;
     }
 
     @Override

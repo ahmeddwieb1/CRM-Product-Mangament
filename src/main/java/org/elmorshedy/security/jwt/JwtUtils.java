@@ -71,7 +71,6 @@ public class JwtUtils {
                 return false;
             }
             Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(token);
-            System.out.println("vaildat");
             return true;
         } catch (ExpiredJwtException e) {
             logger.warn("JWT token is expired: {}", e.getMessage());

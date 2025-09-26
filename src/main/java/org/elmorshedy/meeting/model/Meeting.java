@@ -27,10 +27,10 @@ public class Meeting {
     private Status status;
     private Location location;
     private String offline_location;
-//    @HashIndexed
+    @HashIndexed
     @JsonIgnore
     private ObjectId clientId;
-//    @HashIndexed
+    @HashIndexed
     @JsonIgnore
     private ObjectId assignedToId;
 

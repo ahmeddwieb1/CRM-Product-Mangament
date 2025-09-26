@@ -72,6 +72,13 @@ public class MeetingController {
     public ResponseEntity<List<MeetingDTO>> getAllMeetings() {
         return ResponseEntity.ok(meetingService.getAllMeetings());
     }
+    
+    @Operation(summary = "Get meetings by pages ")
+    @GetMapping("/page")
+    public ResponseEntity<List<MeetingDTO>> getMeetingsByPage(@RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(meetingService.findMeetingsWithPage(page,size));
+    }
 
     @Operation(summary = "Update a meeting by ID")
     @ApiResponses(value = {

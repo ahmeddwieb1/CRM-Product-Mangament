@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class LeadServiceImp implements LeadService {
@@ -44,6 +43,8 @@ public class LeadServiceImp implements LeadService {
         return leadRepo.findById(id)
                 .map(leadMapper::toDTO);
     }
+
+    //todo update it to use lookup
     @Override
     public List<LeadDTO> getLeadsForSales(ObjectId assignedToId) {
         return leadRepo.findByAssignedToId(assignedToId)
@@ -52,13 +53,24 @@ public class LeadServiceImp implements LeadService {
                 .toList();
     }
 
-
-
     @Override
     public List<LeadDTO> getAllLeads() {
-        return leadRepo.findAll().stream()
-                .map(leadMapper::toDTO)
-                .collect(Collectors.toList());
+        long start = System.currentTimeMillis();
+        List<LeadDTO> result = leadRepo.findAllWithUser();
+//        List<LeadDTO> result = leadRepo.findAll()
+//        .stream().map(leadMapper::toDTO)
+//        .collect(Collectors.toList());
+        long end = System.currentTimeMillis();
+        System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
+        return result;
+    }
+
+    public List<LeadDTO> findLeadsWithPage(int page, int size) {
+        long start = System.currentTimeMillis();
+        List<LeadDTO> result = leadRepo.findAllWithUserWithPage(page, size);
+        long end = System.currentTimeMillis();
+        System.out.println("get meeting by page: " + "Query time: " + (end - start) + "ms");
+        return result;
     }
 
     public LeadDTO addLead(RequestLead leadRequest, String currentUsername) {
@@ -158,7 +170,7 @@ public class LeadServiceImp implements LeadService {
     }
 
     @Override
-    public LeadDTO addNoteToLead(ObjectId leadId, String noteContent){
+    public LeadDTO addNoteToLead(ObjectId leadId, String noteContent) {
         Lead lead = leadRepo.findById(leadId)
                 .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
@@ -225,7 +237,6 @@ public class LeadServiceImp implements LeadService {
         }
         return lead;
     }
-
 
 
     private boolean isAdmin(User user) {

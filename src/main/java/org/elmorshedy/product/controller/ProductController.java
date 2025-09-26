@@ -15,6 +15,7 @@ import org.elmorshedy.product.model.ProductUpdateRequest;
 
 import org.elmorshedy.product.service.ProductService;
 import org.elmorshedy.security.ObjectIdParam;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,6 +54,13 @@ public class ProductController {
             content = @Content(schema = @Schema(implementation = ProductDTO.class)))
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
+    }
+    @GetMapping("/page")
+    @Operation(summary = "Get all products", description = "Retrieve all products from the system")
+    @ApiResponse(responseCode = "200", description = "List of products",
+            content = @Content(schema = @Schema(implementation = ProductDTO.class)))
+    public ResponseEntity<List<ProductDTO>> getProductsWithPage(Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductsWithPage(pageable));
     }
 
     @GetMapping("/{id}")

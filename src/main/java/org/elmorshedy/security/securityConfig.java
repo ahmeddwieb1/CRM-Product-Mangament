@@ -62,7 +62,7 @@ public class securityConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((requests) ->
                 requests
-                        .requestMatchers("/api/auth/public/**").permitAll()
+                        .requestMatchers("/api/auth/public/**","/actuator/**").permitAll()
 
                         .requestMatchers(
                                 "/", "/index.html",

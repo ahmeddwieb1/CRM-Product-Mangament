@@ -20,6 +20,7 @@ public class MeetingRepositoryCustomImpl implements MeetingRepositoryCustom {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
     @Override
     public List<MeetingDTO> findAllWithUserAndLead() {
         Aggregation agg = Aggregation.newAggregation(
@@ -33,6 +34,22 @@ public class MeetingRepositoryCustomImpl implements MeetingRepositoryCustom {
                 .map(this::todto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<MeetingDTO> findAllWithUserAndLeadWithPage(int page, int size) {
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.lookup("users", "assignedToId", "_id", "user"),
+                Aggregation.lookup("lead", "clientId", "_id", "lead"),
+                Aggregation.skip((long) page * size),
+                Aggregation.limit(size)
+        );
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "meetings", Document.class);
+
+        return results.getMappedResults().stream()
+                .map(this::todto)
+                .collect(Collectors.toList());
+    }
+
     private MeetingDTO todto(Document doc) {
         MeetingDTO dto = new MeetingDTO();
         dto.setId(doc.getObjectId("_id").toString());

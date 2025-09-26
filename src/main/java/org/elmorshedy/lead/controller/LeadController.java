@@ -14,7 +14,6 @@ import org.elmorshedy.lead.service.LeadServiceImp;
 import org.elmorshedy.meeting.model.NoteRequest;
 import org.elmorshedy.security.ObjectIdParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +21,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/lead")
@@ -102,6 +100,13 @@ public class LeadController {
     @GetMapping
     public List<LeadDTO> getAllLeads() {
         return leadService.getAllLeads();
+    }
+
+    @Operation(summary = "Get lead by pages ")
+    @GetMapping("/page")
+    public ResponseEntity<List<LeadDTO>> getMeetingsByPage(@RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "5") int size) {
+        return ResponseEntity.ok(leadService.findLeadsWithPage(page,size));
     }
 
     @Operation(summary = "Delete a lead (Admin only)")

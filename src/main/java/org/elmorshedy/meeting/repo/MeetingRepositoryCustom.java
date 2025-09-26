@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MeetingRepositoryCustom {
     List<MeetingDTO> findAllWithUserAndLead();
+
+    List<MeetingDTO> findAllWithUserAndLeadWithPage(int page, int size);
 }

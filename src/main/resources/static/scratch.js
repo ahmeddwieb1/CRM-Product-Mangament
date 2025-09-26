@@ -1,4 +1,4 @@
-db.meetings.aggregate([
+db.lead.aggregate([
     {
         $lookup:
             {
@@ -9,18 +9,6 @@ db.meetings.aggregate([
                     {$project: {username: 1, _id: 0}}
                 ],
                 as: "user"
-            }
-    },
-    {
-        $lookup:
-            {
-                from: "lead",
-                let: {lid: "$clientId"},
-                pipeline: [
-                    {$match: {$expr: {$eq: ["$_id", "$$lid"]}}},
-                    {$project: {leadName: 1, _id: 0}}
-                ],
-                as: "lead"
             }
     }
 ])

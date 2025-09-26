@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface LeadRepo extends MongoRepository<Lead, ObjectId> {
+public interface LeadRepo extends MongoRepository<Lead, ObjectId> ,LeadRepositoryCustom{
     Long countByAssignedToId(ObjectId assignedToId);
     boolean existsByPhone(@Size(min = 10, max = 12)
                           @Pattern(regexp = "^[0-9]+$",
