@@ -1,6 +1,7 @@
 package org.elmorshedy.lead.repo;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.elmorshedy.lead.model.LeadDTO;
 import org.elmorshedy.lead.model.LeadSource;
 import org.elmorshedy.lead.model.LeadStatus;
@@ -10,9 +11,10 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.stereotype.Repository;
 
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Repository
 public class LeadRepositoryCustomImpl implements LeadRepositoryCustom {
@@ -23,6 +25,19 @@ public class LeadRepositoryCustomImpl implements LeadRepositoryCustom {
     public List<LeadDTO> findAllWithUser() {
         Aggregation agg = Aggregation.newAggregation(
                 Aggregation.lookup("users", "assignedToId", "_id", "user")
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "lead", Document.class);
+
+        return results.getMappedResults().stream()
+                .map(this::todto)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<LeadDTO> findByAssignedToIdWithUser(ObjectId assignedToId) {
+        Aggregation agg = Aggregation.newAggregation(Aggregation.match(where("assignedToId").is(assignedToId)),
+                Aggregation.lookup("users", "assignedToId", "_id", "user")
+
         );
 
         AggregationResults<Document> results = mongoTemplate.aggregate(agg, "lead", Document.class);

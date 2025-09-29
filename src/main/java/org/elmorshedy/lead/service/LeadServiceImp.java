@@ -47,19 +47,17 @@ public class LeadServiceImp implements LeadService {
     //todo update it to use lookup
     @Override
     public List<LeadDTO> getLeadsForSales(ObjectId assignedToId) {
-        return leadRepo.findByAssignedToId(assignedToId)
-                .stream()
-                .map(leadMapper::toDTO)
-                .toList();
+        long start = System.currentTimeMillis();
+        List<LeadDTO> result = leadRepo.findByAssignedToIdWithUser(assignedToId);
+        long end = System.currentTimeMillis();
+        System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
+        return result;
     }
 
     @Override
     public List<LeadDTO> getAllLeads() {
         long start = System.currentTimeMillis();
         List<LeadDTO> result = leadRepo.findAllWithUser();
-//        List<LeadDTO> result = leadRepo.findAll()
-//        .stream().map(leadMapper::toDTO)
-//        .collect(Collectors.toList());
         long end = System.currentTimeMillis();
         System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
         return result;

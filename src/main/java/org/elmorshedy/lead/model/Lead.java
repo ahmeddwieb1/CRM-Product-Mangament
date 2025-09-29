@@ -23,7 +23,7 @@ public class Lead {
     @Size(min = 10, max = 12)
     @Pattern(regexp = "^[0-9]+$", message = "Phone number must contain only digits")
     private String phone;
-//    @HashIndexed
+    @HashIndexed
     @JsonIgnore
     private ObjectId assignedToId;
 

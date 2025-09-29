@@ -87,7 +87,7 @@ public class LeadController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
+//todo test it
     @Operation(summary = "Get all leads assigned to a specific user")
     @GetMapping("/{assignedToId}/user")
     public ResponseEntity<List<LeadDTO>> getLeadsByAssignedToId(@ObjectIdParam @PathVariable ObjectId assignedToId) {

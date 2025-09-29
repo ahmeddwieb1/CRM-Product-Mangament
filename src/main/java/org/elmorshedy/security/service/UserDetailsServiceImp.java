@@ -24,9 +24,12 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Transactional
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        long start = System.currentTimeMillis();
         User user = userRepo.findByUsername(usernameOrEmail)
                 .orElseGet(() -> userRepo.findByEmail(usernameOrEmail)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + usernameOrEmail)));
+        long end = System.currentTimeMillis();
+        System.out.println("get by username or email: " + "Query time: " + (end - start) + "ms");
         return UserDetailsImp.build(user);
     }
 }

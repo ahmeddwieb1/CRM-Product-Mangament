@@ -42,8 +42,12 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User findByUsername(String username) {
+        long start = System.currentTimeMillis();
         Optional<User> user = userRepo.findByUsername(username);
-        return user.orElseThrow(() -> new NoSuchElementException("User not found"));
+        User result =user.orElseThrow(() -> new NoSuchElementException("User not found"));
+        long end = System.currentTimeMillis();
+        System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
+        return result;
     }
 
     public User findById(ObjectId id) {
