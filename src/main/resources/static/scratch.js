@@ -1,7 +1,7 @@
 db.lead.aggregate([
     {
         $match: {
-            assignedToId: ObjectId("689ccdf26d6fb66fb8b77d2f")
+            _id: ObjectId("68c0990b0e12095399b125d1")
         }
     },
     {

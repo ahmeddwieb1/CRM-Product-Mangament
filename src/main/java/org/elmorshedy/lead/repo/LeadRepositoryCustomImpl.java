@@ -33,11 +33,12 @@ public class LeadRepositoryCustomImpl implements LeadRepositoryCustom {
                 .map(this::todto)
                 .collect(Collectors.toList());
     }
+
     @Override
     public List<LeadDTO> findByAssignedToIdWithUser(ObjectId assignedToId) {
-        Aggregation agg = Aggregation.newAggregation(Aggregation.match(where("assignedToId").is(assignedToId)),
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.match(where("assignedToId").is(assignedToId)),
                 Aggregation.lookup("users", "assignedToId", "_id", "user")
-
         );
 
         AggregationResults<Document> results = mongoTemplate.aggregate(agg, "lead", Document.class);
@@ -45,6 +46,19 @@ public class LeadRepositoryCustomImpl implements LeadRepositoryCustom {
         return results.getMappedResults().stream()
                 .map(this::todto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public LeadDTO findByIdWithUser(ObjectId Id) {
+        Aggregation agg = Aggregation.newAggregation(
+                Aggregation.match(where("_id").is(Id)),
+                Aggregation.lookup("users", "assignedToId", "_id", "user")
+        );
+
+        AggregationResults<Document> results = mongoTemplate.aggregate(agg, "lead", Document.class);
+
+        return results.getMappedResults().stream()
+                .map(this::todto);
     }
 
     @Override

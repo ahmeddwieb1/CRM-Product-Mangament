@@ -23,34 +23,34 @@ public class LeadServiceImp implements LeadService {
 
     private final LeadRepo leadRepo;
     private final UserRepo userRepo;
-    private final LeadMapper leadMapper;
+
     private final MeetingServiceImp meetingService;
 
     @Autowired
     public LeadServiceImp(LeadRepo leadRepo,
                           UserRepo userRepo,
-                          LeadMapper leadMapper,
                           MeetingServiceImp meetingService) {
         this.leadRepo = leadRepo;
         this.userRepo = userRepo;
-        this.leadMapper = leadMapper;
         this.meetingService = meetingService;
     }
 
     //done
     @Override
     public Optional<LeadDTO> getLead(ObjectId id) {
-        return leadRepo.findById(id)
-                .map(leadMapper::toDTO);
+        return leadRepo.findByIdWithUser(id);
     }
 
-    //todo update it to use lookup
     @Override
     public List<LeadDTO> getLeadsForSales(ObjectId assignedToId) {
         long start = System.currentTimeMillis();
         List<LeadDTO> result = leadRepo.findByAssignedToIdWithUser(assignedToId);
+//     List<LeadDTO> result =     leadRepo.findByAssignedToId(assignedToId)
+//                .stream()
+//                .map(leadMapper::toDTO)
+//                .toList();
         long end = System.currentTimeMillis();
-        System.out.println("get All meeting: " + "Query time: " + (end - start) + "ms");
+        System.out.println("get for sales: " + "Query time: " + (end - start) + "ms");
         return result;
     }
 
@@ -135,7 +135,7 @@ public class LeadServiceImp implements LeadService {
     public LeadDTO updateLead(ObjectId id, RequestLead leadRequest, String currentUsername) {
         User currentUser = userRepo.findByUsername(currentUsername)
                 .orElseThrow(() -> new NoSuchElementException("Current user not found"));
-        Lead lead = leadRepo.findById(id)
+        LeadDTO lead = leadRepo.findByIdWithUser(id)
                 .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         Lead updatelead = updateLeadFromRequest(leadRequest, lead);
@@ -147,7 +147,7 @@ public class LeadServiceImp implements LeadService {
     }
 
     public LeadDTO updateLeadStatus(ObjectId id, RequestLead leadRequest) {
-        Lead lead = leadRepo.findById(id)
+        LeadDTO lead = leadRepo.findByIdWithUser(id)
                 .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         if (leadRequest.getLeadStatus() != null) {
@@ -169,7 +169,7 @@ public class LeadServiceImp implements LeadService {
 
     @Override
     public LeadDTO addNoteToLead(ObjectId leadId, String noteContent) {
-        Lead lead = leadRepo.findById(leadId)
+        Lead lead = leadRepo.findByIdWithUser(leadId)
                 .orElseThrow(() -> new NoSuchElementException("Lead not found"));
 
         if (lead.getNotes() == null) {
@@ -184,7 +184,7 @@ public class LeadServiceImp implements LeadService {
 
     @Override
     public LeadDTO deleteNoteFromLead(ObjectId id, String content) {
-        Lead lead = leadRepo.findById(id)
+        Lead lead = leadRepo.findByIdWithUser(id)
                 .orElseThrow(() -> new NoSuchElementException("Lead not found with ID: " + id));
         if (lead.getNotes() == null || lead.getNotes().isEmpty()) {
             throw new IllegalArgumentException("Lead has no notes to delete");
@@ -194,11 +194,12 @@ public class LeadServiceImp implements LeadService {
         if (!remove) {
             throw new NoSuchElementException("Note not found in Lead");
         }
+
         Lead updated = leadRepo.save(lead);
         return leadMapper.toDTO(updated);
     }
 
-    private Lead updateLeadFromRequest(RequestLead requestLead, Lead lead) {
+    private Lead updateLeadFromRequest(RequestLead requestLead, LeadDTO lead) {
         if (requestLead.getLeadName() != null) {
             lead.setLeadName(requestLead.getLeadName());
         }
@@ -224,7 +225,7 @@ public class LeadServiceImp implements LeadService {
             if (newPhone.length() < 10 || newPhone.length() > 12) {
                 throw new IllegalArgumentException("Phone number must be between 10 and 12 digits");
             }
-
+//todo find soln
             if (!newPhone.equals(lead.getPhone())) {
                 Optional<Lead> existingLead = leadRepo.findByPhone(newPhone);
                 if (existingLead.isPresent() && !existingLead.get().getId().equals(lead.getId())) {
