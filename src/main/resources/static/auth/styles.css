@@ -13,6 +13,7 @@
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
+
   margin:0;
   font-family: Inter, Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   color:var(--text);
@@ -22,13 +23,14 @@ body{
 }
 .container{
   min-height:100%;
+
   display:flex;align-items:center;justify-content:center;
   padding:32px;
 }
 .card{
   width:100%;
   max-width: 960px;
-  display:grid;grid-template-columns: 1.1fr .9fr;gap:0;
+ display:grid;grid-template-columns: 1.1fr .9fr;gap:0;
   background: var(--card);
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.04);
